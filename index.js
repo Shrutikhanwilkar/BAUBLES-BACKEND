@@ -2,7 +2,7 @@ import express from "express"; // if using ES modules
 // const express = require("express"); // if using CommonJS
 
 const app = express();
-const PORT =  3000;
+const PORT =process.env.PORT;
 
 app.use(express.json());
 // Define a simple route

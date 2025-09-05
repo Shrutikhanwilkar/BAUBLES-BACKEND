@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import {Role} from "../../utils/contants.js"
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: false },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role:{type:String,required:true,default:Role.USER},

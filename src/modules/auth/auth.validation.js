@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { Role } from "../../utils/contants.js";
 export const signupSchema = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).required(),
+  name: Joi.string().alphanum().min(3).max(30).optional().allow("",null),
   email: Joi.string().email().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,8}$")).required(),
   confirmPassword: Joi.string().valid(Joi.ref("password")).required(),
