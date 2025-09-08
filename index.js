@@ -1,6 +1,6 @@
 import express from "express"; // if using ES modules
 // const express = require("express"); // if using CommonJS
-
+import { globalErrorHandler } from "./src/utils/globalErrorHandler.js";
 const app = express();
 const PORT =process.env.PORT;
 
@@ -22,8 +22,9 @@ app.use("/api", router);
 import { connectDB } from "./src/config/dbConnection.js";
 import { sendError } from "./src/utils/responseHelper.js";
 import HTTPStatusCode from "./src/utils/httpStatusCode.js";
-connectDB();
 
+connectDB();
+app.use(globalErrorHandler);
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
