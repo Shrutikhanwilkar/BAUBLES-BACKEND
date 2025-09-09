@@ -10,12 +10,18 @@ export default class ChildrenController {
     });
 
     static updateChild = asyncHandler(async (req, res) => {
-        const data = await ChildrenService.updateChild(req.body);
+        const childId = req.params.id
+        const data = await ChildrenService.updateChild({ ...req.body, childId });
         sendSuccess(res, data, "Child updated successfully", httpStatus.OK);
     });
 
     static listChildren = asyncHandler(async (req, res) => {
         const data = await ChildrenService.listChildren(req.body);
         sendSuccess(res, data, "Children list fetched successfully", httpStatus.OK);
+    });
+    static deleteChild = asyncHandler(async (req, res) => {
+        const childId = req.params.id
+        const data = await ChildrenService.deleteChild({ ...req.body, childId });
+        sendSuccess(res, data, "Child deleted successfully", httpStatus.OK);
     });
 }

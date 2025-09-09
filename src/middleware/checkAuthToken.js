@@ -8,7 +8,7 @@ import HTTPStatusCode from "../utils/httpStatusCode.js";
 
 const authenticateToken = async (req, res, next) => {
   // Get token from Authorization header
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.headers['x-authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Expected: "Bearer <token>"
   if (!token) {
     return await sendError(

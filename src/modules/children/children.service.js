@@ -1,22 +1,21 @@
 
 import httpStatus from "http-status";
 import Children from "../../models/children.model.js";
+import AppError from "../../utils/appError.js"
 
 export default class ChildrenService {
 
-   static async addChild(reqBody) {
+    static async addChild(reqBody) {
         const { firstName, age, state, gender } = reqBody;
         const parentId = reqBody.user.id;
-
         const childCount = await Children.countDocuments({ parentId });
         if (childCount >= 5) {
             throw new AppError({
                 status: false,
-                message:"You cannot add more than 5 children",
+                message: "You cannot add more than 5 children",
                 httpStatus: httpStatus.OK,
-              });
+            });
         }
-
         // Create child
         const child = await Children.create({
             firstName,
@@ -25,7 +24,6 @@ export default class ChildrenService {
             gender,
             parentId,
         });
-
         return {
             _id: child._id,
             firstName: child.firstName,
@@ -34,7 +32,7 @@ export default class ChildrenService {
             gender: child.gender,
         };
     }
-  static  async updateChild(reqBody) {
+    static async updateChild(reqBody) {
         const { childId, firstName, age, state, gender } = reqBody;
         const parentId = reqBody.user.id;
         const child = await Children.findOne({ _id: childId, parentId });
@@ -62,7 +60,7 @@ export default class ChildrenService {
         };
     }
     // List all children of a parent
- static async listChildren(reqBody) {
+    static async listChildren(reqBody) {
         const parentId = reqBody.user.id;
         const children = await Children.find({ parentId }).sort({ createdAt: -1 });
 
@@ -74,4 +72,23 @@ export default class ChildrenService {
             gender: child.gender,
         }));
     }
+    static async deleteChild(reqBody) {
+        const { childId } = reqBody;
+        const parentId = reqBody.user.id;
+        const child = await Children.findOne({ _id: childId, parentId });
+        if (!child) {
+            throw new AppError({
+                status: false,
+                message: "Child not found or not authorized",
+                httpStatus: httpStatus.NOT_FOUND,
+            });
+        }
+
+        await child.deleteOne();
+
+        return {
+            _id: childId,
+        };
+    }
+    
 }
