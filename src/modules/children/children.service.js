@@ -1,6 +1,6 @@
 
 import httpStatus from "http-status";
-import Children from "../../models/children.model.js";
+import Children from "./children.model.js";
 import AppError from "../../utils/appError.js"
 
 export default class ChildrenService {
