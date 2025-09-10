@@ -1,7 +1,7 @@
 import { Router } from "express";
 import ChildrenController from "./children.controller.js";
 import authenticateToken from "../../middleware/checkAuthToken.js";
-import { addChildSchema, updateChildSchema } from "./input.validation.js";
+import { addChildSchema, updateChildSchema } from "./children.validation.js";
 import { validate } from "../../middleware/validation.js";
 const childrenRouter = Router()
 
