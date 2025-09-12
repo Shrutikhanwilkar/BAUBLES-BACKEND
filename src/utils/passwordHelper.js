@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { Salt } from "./contants.js";
+import { Salt } from "./constants.js";
 
 
 export const hashPassword = async (password) => {

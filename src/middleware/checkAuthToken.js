@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from '../modules/auth/auth.model.js';
+import User from "../models/auth.model.js"
 import  {sendError} from "../utils/responseHelper.js";
 import HTTPStatusCode from "../utils/httpStatusCode.js";
 // import * as dotenv from 'dotenv';
