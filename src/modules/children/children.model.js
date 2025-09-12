@@ -6,16 +6,19 @@ const childrenSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "users",
             required: true,
-          },
+        },
+        avatar: {
+            type: String,
+            default: null,
+        },
         firstName: {
             type: String,
             required: true,
             trim: true,
         },
-        age: {
-            type: Number,
+        dob: {
+            type: Date,
             required: true,
-            min: 0,
         },
         state: {
             type: String,
