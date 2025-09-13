@@ -90,5 +90,33 @@ export default class ChildrenService {
             _id: childId,
         };
     }
-    
+    static async updateAvatar(childId, parentId, avatarUrl) {
+        const child = await Children.findOne({ _id: childId, parentId });
+        const existingAvatar = child.avatar
+        if (!child) {
+            throw new AppError({
+                message: "Child not found or not authorized",
+                httpStatus: httpStatus.NOT_FOUND,
+            });
+        }
+        try {
+            child.avatar = avatarUrl;
+            await child.save();
+
+            return {
+                _id: child._id,
+                firstName: child.firstName,
+                avatar: child.avatar,
+            };
+        } catch (err) {
+            await removeFromFirebase(avatarUrl);
+
+            throw new AppError({
+                message: "Failed to update avatar",
+                httpStatus: httpStatus.INTERNAL_SERVER_ERROR,
+                details: err.message,
+            });
+        }
+
+    }
 }

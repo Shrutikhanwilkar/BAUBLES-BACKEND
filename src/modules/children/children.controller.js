@@ -24,4 +24,11 @@ export default class ChildrenController {
         const data = await ChildrenService.deleteChild({ ...req.body, childId });
         sendSuccess(res, data, "Child deleted successfully", httpStatus.OK);
     });
+    static updateAvatar = asyncHandler(async (req, res) => {
+        const { childId } = req.params;
+        const parentId = req.user.id;
+        const avatarUrl = req.body.avatar;
+        const data = await ChildrenService.updateAvatar(childId, parentId, avatarUrl);
+        return sendSuccess(res, data, "Avatar updated successfully", httpStatus.OK);
+    })
 }
