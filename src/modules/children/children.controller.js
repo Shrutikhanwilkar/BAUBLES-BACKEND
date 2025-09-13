@@ -6,7 +6,7 @@ import asyncHandler from "../../utils/asyncHandler.js";
 export default class ChildrenController {
     static addChild = asyncHandler(async (req, res) => {
         const data = await ChildrenService.addChild(req.body);
-        sendSuccess(res, data, "Child added successfully",httpStatus.CREATED);
+        sendSuccess(res, data, "Child added successfully", httpStatus.CREATED);
     });
 
     static updateChild = asyncHandler(async (req, res) => {
