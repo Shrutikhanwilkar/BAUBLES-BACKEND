@@ -1,12 +1,12 @@
 
 import httpStatus from "http-status";
-import Children from "./children.model.js";
+import Children from "../../models/children.model.js";
 import AppError from "../../utils/appError.js"
 
 export default class ChildrenService {
 
     static async addChild(reqBody) {
-        const { firstName, age, state, gender } = reqBody;
+        const { firstName, dob, state, gender } = reqBody;
         const parentId = reqBody.user.id;
         const childCount = await Children.countDocuments({ parentId });
         if (childCount >= 5) {
@@ -19,7 +19,7 @@ export default class ChildrenService {
         // Create child
         const child = await Children.create({
             firstName,
-            age,
+            dob,
             state,
             gender,
             parentId,
@@ -27,13 +27,13 @@ export default class ChildrenService {
         return {
             _id: child._id,
             firstName: child.firstName,
-            age: child.age,
+            dob: child.dob,
             state: child.state,
             gender: child.gender,
         };
     }
     static async updateChild(reqBody) {
-        const { childId, firstName, age, state, gender } = reqBody;
+        const { childId, firstName, dob, state, gender } = reqBody;
         const parentId = reqBody.user.id;
         const child = await Children.findOne({ _id: childId, parentId });
         if (!child) {
@@ -45,7 +45,7 @@ export default class ChildrenService {
         }
 
         if (firstName) child.firstName = firstName;
-        if (age) child.age = age;
+        if (dob) child.dob = dob;
         if (state) child.state = state;
         if (gender) child.gender = gender;
 
@@ -54,7 +54,7 @@ export default class ChildrenService {
         return {
             _id: child._id,
             firstName: child.firstName,
-            age: child.age,
+            dob: child.dob,
             state: child.state,
             gender: child.gender,
         };
@@ -67,7 +67,7 @@ export default class ChildrenService {
         return children.map((child) => ({
             _id: child._id,
             firstName: child.firstName,
-            age: child.age,
+            dob: child.dob,
             state: child.state,
             gender: child.gender,
         }));
@@ -90,5 +90,33 @@ export default class ChildrenService {
             _id: childId,
         };
     }
-    
+    static async updateAvatar(childId, parentId, avatarUrl) {
+        const child = await Children.findOne({ _id: childId, parentId });
+        const existingAvatar = child.avatar
+        if (!child) {
+            throw new AppError({
+                message: "Child not found or not authorized",
+                httpStatus: httpStatus.NOT_FOUND,
+            });
+        }
+        try {
+            child.avatar = avatarUrl;
+            await child.save();
+
+            return {
+                _id: child._id,
+                firstName: child.firstName,
+                avatar: child.avatar,
+            };
+        } catch (err) {
+            await removeFromFirebase(avatarUrl);
+
+            throw new AppError({
+                message: "Failed to update avatar",
+                httpStatus: httpStatus.INTERNAL_SERVER_ERROR,
+                details: err.message,
+            });
+        }
+
+    }
 }

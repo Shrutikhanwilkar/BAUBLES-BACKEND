@@ -1,4 +1,4 @@
-import User from "./auth.model.js";
+import User from "../../models/auth.model.js"
 import { generateToken } from "../../utils/jwtHelper.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 import { hashPassword ,comparePassword} from "../../utils/passwordHelper.js";

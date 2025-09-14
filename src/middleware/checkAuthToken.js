@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import User from '../modules/auth/auth.model.js';
-import  {sendError} from "../utils/responseHelper.js";
+import User from "../models/auth.model.js"
+import { sendError } from "../utils/responseHelper.js";
 import HTTPStatusCode from "../utils/httpStatusCode.js";
 // import * as dotenv from 'dotenv';
 
@@ -20,7 +20,6 @@ const authenticateToken = async (req, res, next) => {
 
   // Verify token
   jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
-   
     if (err) {
       return await sendError(
         res,
@@ -57,7 +56,9 @@ const authenticateToken = async (req, res, next) => {
     //     'User Deleted',
     //     HTTP_STATUS.BAD_REQUEST)
     // }
+    if (!req.body) req.body = {};
     req.body.user = user;
+    req.user = user;
     next();
   });
 };

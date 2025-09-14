@@ -1,0 +1,12 @@
+import { Router } from "express"
+import authenticateToken from "../../middleware/checkAuthToken.js";
+import UserController from "./user.controller.js";
+import { updateUserSchema } from "./user.validation.js";
+import { validate } from "../../middleware/validation.js";
+
+const router = Router()
+
+router.get("/profile", authenticateToken, UserController.getProfile);
+router.put("/update", validate(updateUserSchema), authenticateToken, UserController.updateProfile);
+
+export default router
