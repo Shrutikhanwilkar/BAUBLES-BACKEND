@@ -10,7 +10,8 @@ export default class StaticPageController {
     });
 
     static updatePage = asyncHandler(async (req, res) => {
-        const data = await StaticPageService.updatePage(req.body);
+        const { pageId } = req.params;
+        const data = await StaticPageService.updatePage(pageId,req.body);
         return sendSuccess(res, data, "Page updated successfully", httpStatus.OK);
     });
 
