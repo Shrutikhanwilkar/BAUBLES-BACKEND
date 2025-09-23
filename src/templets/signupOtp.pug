@@ -1,0 +1,14 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title OTP Verification
+  body(style="font-family: Arial, sans-serif; color: #333;")
+    h2(style="color:#1f8ef1;") Email Verification OTP
+    p Hi #{name},
+    p Please use the OTP below to verify your account:#{email}
+    h1(style="letter-spacing:4px; background:#f5f7fa; padding:10px 20px; border-radius:6px; display:inline-block;") #{otp}
+    p This OTP will expire in 10 minutes.
+    p Thanks,
+    p The #{appName} Team

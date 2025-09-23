@@ -2,7 +2,7 @@
 import httpStatus from "http-status";
 import Children from "../../models/children.model.js";
 import AppError from "../../utils/appError.js"
-
+import { removeFromFirebase } from "../../middleware/upload.js";
 export default class ChildrenService {
 
     static async addChild(reqBody) {
@@ -102,7 +102,7 @@ export default class ChildrenService {
         try {
             child.avatar = avatarUrl;
             await child.save();
-
+            await removeFromFirebase(existingAvatar);
             return {
                 _id: child._id,
                 firstName: child.firstName,

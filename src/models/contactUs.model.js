@@ -8,6 +8,13 @@ const contactUsSchema = new Schema(
         email: { type: String, required: true, trim: true },
         mobile: { type: String, trim: true },
         message: { type: String, required: true },
+        type:{
+            type:String,
+            required:true,
+            trim:true,
+            default:"Other",
+                enum:["Other","App Question","Bauble Question","Support","Other"]
+        }
     },
     { timestamps: true }
 );

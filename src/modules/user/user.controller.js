@@ -15,4 +15,10 @@ export default class UserController {
         const data = await UserService.updateProfile(userId, req.body);
         return sendSuccess(res, data, "User profile updated successfully", httpStatus.OK);
     });
+    static updateAvatar = asyncHandler(async (req, res) => {
+        const id = req.user.id;
+        const avatarUrl = req.body.avatar;
+        const data = await UserService.updateAvatar(id, avatarUrl);
+        return sendSuccess(res, data, "Avatar updated successfully", httpStatus.OK);
+    })
 }

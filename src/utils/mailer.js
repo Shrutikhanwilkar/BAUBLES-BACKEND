@@ -1,13 +1,15 @@
 import nodemailer from "nodemailer"
 
+
+const appName = process.env.APP_NAME
 const sendEmail = async (name, email, subject, message) => {
     const transporter = nodemailer.createTransport({
-        host: env.MAIL_HOST,
-        port: env.MAIL_PORT,
+        host: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
         secure: true,
         auth: {
-            user: env.MAIL_USERNAME,
-            pass: env.MAIL_PASSWORD,
+            user: process.env.MAIL_USERNAME,
+            pass: process.env.MAIL_PASSWORD,
         },
     });
 
@@ -20,7 +22,7 @@ const sendEmail = async (name, email, subject, message) => {
     });
 
     const info = await transporter.sendMail({
-        from: `${constants.CONST_APP_NAME} <${constants.CONST_SMTP_FROM_ADDRESS}>`,
+        from: `${appName} <${process.env.SMTP_FROM_ADDRESS}>`,
         to: email,
         subject: subject,
         html: message,
@@ -28,3 +30,15 @@ const sendEmail = async (name, email, subject, message) => {
 
     console.log("Message sent: %s", info.messageId);
 };
+export const sendRegistrationOtp = async (userData, otpData) => {
+    let templateDir = "templates/";
+    let messageBody = pug.renderFile(`${templateDir}signupOtp.pug`, {
+        name: userData.fullName,
+        email: userData.email,
+        otp: otpData.randomOtp,
+
+    });
+    let subject = i18n.__("lang_registration_otp");
+    await sendEmail(userData.name, userData.email, subject, messageBody);
+    return true;
+  };

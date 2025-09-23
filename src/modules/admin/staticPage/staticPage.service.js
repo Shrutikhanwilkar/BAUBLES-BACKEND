@@ -9,10 +9,8 @@ export default class StaticPageService {
         return page;
     }
 
-    static async updatePage(reqBody) {
-        const { pageId, ...updateData } = reqBody;
-
-        const page = await StaticPage.findById(pageId);
+    static async updatePage(id,reqBody) {
+        const page = await StaticPage.findById(id);
         if (!page) {
             throw new AppError({
                 status: false,
@@ -21,7 +19,7 @@ export default class StaticPageService {
             });
         }
 
-        Object.assign(page, updateData);
+        Object.assign(page, reqBody);
         await page.save();
 
         return page;
