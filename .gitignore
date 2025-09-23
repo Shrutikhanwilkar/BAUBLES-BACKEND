@@ -1,3 +1,4 @@
 *.env
 /node_modules
-src/config/baubles-d8d6c-firebase-adminsdk-fbsvc-0a141d89e7.json
+# Firebase service account
+/src/config/baubles-d8d6c-firebase-adminsdk-fbsvc-0a141d89e7.json
