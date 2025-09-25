@@ -7,11 +7,10 @@ import { uploadSingleToFirebase } from "../../middleware/upload.js";
 const childrenRouter = Router()
 
 
-childrenRouter.post("/add", validate(addChildSchema), authenticateToken, ChildrenController.addChild);
-childrenRouter.put("/update/:id", validate(updateChildSchema), authenticateToken, ChildrenController.updateChild);
+childrenRouter.post("/add", uploadSingleToFirebase("avatar"), validate(addChildSchema), authenticateToken, ChildrenController.addChild);
+childrenRouter.put("/update/:id", uploadSingleToFirebase("avatar"), validate(updateChildSchema), authenticateToken, ChildrenController.updateChild);
 childrenRouter.get("/list", authenticateToken, ChildrenController.listChildren);
 childrenRouter.delete("/delete/:id", authenticateToken, ChildrenController.deleteChild);
 childrenRouter.patch("/update-avatar/:childId", authenticateToken, uploadSingleToFirebase("avatar"), ChildrenController.updateAvatar);
 
 export default childrenRouter
-
