@@ -6,34 +6,52 @@ import { removeFromFirebase } from "../../middleware/upload.js";
 export default class ChildrenService {
 
     static async addChild(reqBody) {
-        const { firstName, dob, state, gender } = reqBody;
+        const { firstName, dob, state, gender, avatar } = reqBody;
         const parentId = reqBody.user.id;
+
         const childCount = await Children.countDocuments({ parentId });
         if (childCount >= 5) {
             throw new AppError({
                 status: false,
                 message: "You cannot add more than 5 children",
-                httpStatus: httpStatus.OK,
+                httpStatus: httpStatus.BAD_REQUEST,
             });
         }
-        // Create child
-        const child = await Children.create({
-            firstName,
-            dob,
-            state,
-            gender,
-            parentId,
-        });
-        return {
-            _id: child._id,
-            firstName: child.firstName,
-            dob: child.dob,
-            state: child.state,
-            gender: child.gender,
-        };
+
+        try {
+            // Create child with optional avatar
+            const child = await Children.create({
+                firstName,
+                dob,
+                state,
+                gender,
+                parentId,
+                avatar: avatar || null,
+            });
+
+            return {
+                _id: child._id,
+                firstName: child.firstName,
+                dob: child.dob,
+                state: child.state,
+                gender: child.gender,
+                avatar: child.avatar || null,
+            };
+        } catch (err) {
+            // Rollback avatar file if provided and save fails
+            if (avatar) {
+                await removeFromFirebase(avatar);
+            }
+            throw new AppError({
+                message: "Failed to add child",
+                httpStatus: httpStatus.INTERNAL_SERVER_ERROR,
+                details: err.message,
+            });
+        }
     }
+    
     static async updateChild(reqBody) {
-        const { childId, firstName, dob, state, gender } = reqBody;
+        const { childId, firstName, dob, state, gender, avatar } = reqBody;
         const parentId = reqBody.user.id;
         const child = await Children.findOne({ _id: childId, parentId });
         if (!child) {
@@ -48,6 +66,10 @@ export default class ChildrenService {
         if (dob) child.dob = dob;
         if (state) child.state = state;
         if (gender) child.gender = gender;
+        if (avatar) {
+            child.avatar = avatar;
+        }
+
 
         await child.save();
 
@@ -57,6 +79,7 @@ export default class ChildrenService {
             dob: child.dob,
             state: child.state,
             gender: child.gender,
+            avatar: child.avatar || null,
         };
     }
     // List all children of a parent

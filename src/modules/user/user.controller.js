@@ -21,4 +21,8 @@ export default class UserController {
         const data = await UserService.updateAvatar(id, avatarUrl);
         return sendSuccess(res, data, "Avatar updated successfully", httpStatus.OK);
     })
+    static staticData = asyncHandler(async (req, res) => {
+        const data = await UserService.staticData();
+        return sendSuccess(res, data, "Data fetched successfully", httpStatus.OK);
+    })
 }

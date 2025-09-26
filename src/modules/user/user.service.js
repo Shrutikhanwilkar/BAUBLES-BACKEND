@@ -2,6 +2,8 @@ import httpStatus from "http-status";
 import User from "../../models/auth.model.js"
 import AppError from "../../utils/appError.js";
 import { removeFromFirebase } from "../../middleware/upload.js";
+import StatusCategory from "../../models/statusCategory.model.js";
+import StaticPage from "../../models/staticPage.model.js";
 
 export default class UserService {
     static async getProfile(userId) {
@@ -74,5 +76,13 @@ export default class UserService {
             });
         }
 
+    }
+    static async staticData (){
+        const statusCategories = await StatusCategory.find().sort({ visibilityRank: 1, createdAt: 1 }).select("name color description").lean();; 
+        const staticPages = await StaticPage.find().sort({ createdAt: -1 }).lean();
+        return {
+            statusCategories,
+            staticPages
+        }
     }
 }
