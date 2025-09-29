@@ -4,12 +4,14 @@ import contactUsRoute from "../contactUS/contactUs.route.js"
 import authRoute from "../admin/auth/auth.route.js"
 import statusCategoryRoutes from "./statusCategory/statusCategory.route.js"
 import musicRoutes from "./music/music.route.js"
+import giftRoutes from "./gift/gift.route.js"
 
 const router = Router()
 router.use("/static-page", staticPageRouter)
 router.use("/contact-us", contactUsRoute)
 router.use("/status", statusCategoryRoutes)
 router.use("/music", musicRoutes)
+router.use("/gift", giftRoutes)
 router.use("/auth", authRoute)
 
 export default router;
