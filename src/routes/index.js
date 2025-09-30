@@ -6,6 +6,7 @@ import adminRouter from "../modules/admin/admin.route.js"
 import staticPageRouter from "../modules/staticPage/staticPage.route.js"
 import UserRoutes from "../modules/user/user.route.js"
 import messageRoutes from "../modules/message/message.route.js"
+import giftRoutes from "../modules/gift/gift.route.js"
 const router = Router();
 
 router.use("/auth", authRouter);
@@ -15,6 +16,7 @@ router.use("/static-page", staticPageRouter);
 router.use("/admin", adminRouter);
 router.use("/user", UserRoutes);
 router.use("/message", messageRoutes);
+router.use("/gift", giftRoutes);
 
 
 export default router;
