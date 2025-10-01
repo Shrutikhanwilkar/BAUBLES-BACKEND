@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import Gift from "../../../models/gift.model.js"
 import AppError from "../../../utils/appError.js";
+import { removeFromFirebase } from "../../../middleware/upload.js";
 
 export default class GiftService {
     static async create(reqBody) {
@@ -33,20 +34,41 @@ export default class GiftService {
     }
 
     static async updateGift(giftId, reqBody) {
-        const gift = await Gift.findByIdAndUpdate(giftId, reqBody, {
-            new: true,
-            runValidators: true,
-        });
-        if (!gift) {
-            throw new AppError({
-                status: false,
-                message: "Gift not found",
-                httpStatus: httpStatus.NOT_FOUND,
-            });
-        }
-        return gift;
-    }
+        let gift = await Gift.findById(giftId);
+        const newImage = reqBody.image;
+        const oldImage = gift?.image;
 
+        try {
+            if (!gift) {
+                if (newImage) {
+                    console.log(1)
+                    await removeFromFirebase(newImage);
+                }
+                throw new AppError({
+                    status: false,
+                    message: "Gift not found",
+                    httpStatus: httpStatus.NOT_FOUND,
+                });
+            }
+            const updatedGift = await Gift.findByIdAndUpdate(giftId, reqBody, {
+                new: true,
+                runValidators: true,
+            });
+            if (newImage && oldImage && newImage !== oldImage) {
+                console.log(2)
+                await removeFromFirebase(oldImage);
+            }
+
+            return updatedGift;
+        } catch (error) {
+            if (newImage && (!gift || newImage !== oldImage)) {
+                console.log(3)
+                await removeFromFirebase(newImage);
+            }
+            throw error;
+        }
+    }
+    
     static async deleteGift(giftId) {
         const gift = await Gift.findById(giftId);
         if (!gift) {
@@ -57,6 +79,7 @@ export default class GiftService {
             });
         }
         await gift.deleteOne();
-        return gift;
+        await removeFromFirebase(gift.image);
+        return null;
     }
 }

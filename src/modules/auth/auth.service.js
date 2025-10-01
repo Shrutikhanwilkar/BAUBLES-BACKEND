@@ -3,10 +3,10 @@ import { generateToken } from "../../utils/jwtHelper.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 import { hashPassword ,comparePassword} from "../../utils/passwordHelper.js";
 import { generateOTP } from "../../utils/otpHelper.js";
+import { sendRegistrationOtp } from "../../utils/mailer.js";
 
 export class AuthService {
   async register(reqBody) {
-    // Check if user already exists
     let { name, email, password } = reqBody;
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -21,10 +21,10 @@ export class AuthService {
       name,
       email,
       password:hashedPassword,
-      otp: "1234",
+      otp: otpData.otp,
       otpExpiredAt: otpData.expiresAt,
     });
-
+    sendRegistrationOtp(user, otpData)
     return {
       _id: user._id,
       name: user.name,

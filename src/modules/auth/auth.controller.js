@@ -6,7 +6,6 @@ import HTTPStatusCode from "../../utils/httpStatusCode.js";
 export class AuthController {
   async register(req, res) {
     try {
-      console.log("helooo")
       const data = await authService.register(req.body);
       sendSuccess(
         res,
