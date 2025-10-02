@@ -5,7 +5,9 @@ import authenticateToken from "../../middleware/checkAuthToken.js"
 const router = Router();
 router.use(authenticateToken);
 router.post("/send", MessageController.sendMessage);
-router.get("/list", MessageController.listMessages);
-router.get("/children/last-message", MessageController.listChildrenWithLastMessage);
+// router.get("/list", MessageController.listMessages);
+router.get("/library", MessageController.musicLibrary);
+
+
 
 export default router;

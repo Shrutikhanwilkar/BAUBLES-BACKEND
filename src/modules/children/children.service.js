@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import Children from "../../models/children.model.js";
 import AppError from "../../utils/appError.js"
 import { removeFromFirebase } from "../../middleware/upload.js";
+import mongoose from "mongoose"
 export default class ChildrenService {
 
     static async addChild(reqBody) {
@@ -141,5 +142,61 @@ export default class ChildrenService {
             });
         }
 
+    }
+    static async listChildrenWithLastMessage(userId) {
+        const pipeline = [
+            { $match: { parentId: new mongoose.Types.ObjectId(userId) } },
+            {
+                $lookup: {
+                    from: "messages",
+                    localField: "_id",
+                    foreignField: "childId",
+                    as: "messages"
+                }
+            },
+            {
+                $addFields: {
+                    lastMessage: { $arrayElemAt: [{ $slice: ["$messages", -1] }, 0] }
+                }
+            },
+
+            {
+                $lookup: {
+                    from: "statuscategories",
+                    localField: "lastMessage.statusCategoryId",
+                    foreignField: "_id",
+                    as: "statusCategory"
+                }
+            },
+            { $unwind: { path: "$statusCategory", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "musics",
+                    localField: "lastMessage.musicId",
+                    foreignField: "_id",
+                    as: "music"
+                }
+            },
+            { $unwind: { path: "$music", preserveNullAndEmptyArrays: true } },
+
+            {
+                $project: {
+                    _id: 1,
+                    firstName: 1,
+                    avatar: 1,
+                    lastMessage: {
+                        _id: 1,
+                        "statusCategory._id": "$statusCategory._id",
+                        "statusCategory.name": "$statusCategory.name",
+                        "statusCategory.color": "$statusCategory.color",
+                        "music._id": "$music._id",
+                        "music.title": "$music.title",
+                        "music.musicFile": "$music.musicFile"
+                    }
+                }
+            }
+        ];
+        const data = await Children.aggregate(pipeline);
+        return data
     }
 }

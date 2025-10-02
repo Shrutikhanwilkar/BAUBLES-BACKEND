@@ -1,8 +1,9 @@
 import Message from "../../models/message.model.js"
-import AppError from "../../utils/appError.js";
 import Music from "../../models/music.model.js";
+import AppError from "../../utils/appError.js";
 import Children from "../../models/children.model.js";
 import mongoose from "mongoose";
+import httpStatus from "http-status";
 class MessageService {
 
     // Send a message to a child for a given status category
@@ -114,25 +115,58 @@ class MessageService {
             data: messages,
         };
     }
+    static async listMusicLibrary({ page = 1, limit = 10 }) {
+        const skip = (page - 1) * limit;
 
-    // List children for a parent with last sent status category
-    static async listChildrenWithLastMessage(parentId) {
-        const children = await Children.find({ parentId }).lean();
+        const pipeline = [
+            {
+                $lookup: {
+                    from: "statuscategories",
+                    localField: "statusCategory",
+                    foreignField: "_id",
+                    as: "statusCategory"
+                }
+            },
+            { $unwind: "$statusCategory" },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    musicFile: 1,
+                    createdAt: 1,
+                    "statusCategory._id": 1,
+                    "statusCategory.name": 1,
+                    "statusCategory.color": 1
+                }
+            },
+            { $sort: { "statusCategory._id": 1, createdAt: -1 } },
 
-        const result = await Promise.all(children.map(async (child) => {
-            const lastMessage = await Message.findOne({ childId: child._id })
-                .sort({ createdAt: -1 })
-                .populate("statusCategoryId", "name color")
-                .lean();
+            // 👇 Pagination with facet
+            {
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit }
+                    ],
+                    totalCount: [
+                        { $count: "count" }
+                    ]
+                }
+            }
+        ];
 
-            return {
-                ...child,
-                lastStatusCategory: lastMessage ? lastMessage.statusCategoryId : null
-            };
-        }));
+        const result = await Music.aggregate(pipeline);
 
-        return result;
+        return {
+            page,
+            limit,
+            total: result[0]?.totalCount[0]?.count || 0,
+            data: result[0]?.data || []
+        };
     }
+    
+
 }
 
 export default MessageService;

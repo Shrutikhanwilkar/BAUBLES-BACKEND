@@ -16,15 +16,16 @@ class MessageController {
     static listMessages = asyncHandler(async (req, res) => {
         const userId = req.user.id
         const data = await MessageService.listMessages(userId, req.query);
-        return sendSuccess(res, data, "Messages fetched successfully", httpStatus.OK);
+        return sendSuccess(res, data, "Data fetched successfully", httpStatus.OK);
     });
-
-    static listChildrenWithLastMessage = asyncHandler(async (req, res) => {
-        const parentId = req.user.id;
-        const data = await MessageService.listChildrenWithLastMessage(parentId);
-        return sendSuccess(res, data, "Children with last message fetched successfully", httpStatus.OK);
+    static musicLibrary = asyncHandler(async (req, res) => {
+        const { page = 1, limit = 10 } = req.query;
+        const data = await MessageService.listMusicLibrary({
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10)
+        });
+        return sendSuccess(res, data, "Data fetched successfully", httpStatus.OK);
     });
-
 }
 
 export default MessageController;
