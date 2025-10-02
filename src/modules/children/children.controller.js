@@ -31,4 +31,9 @@ export default class ChildrenController {
         const data = await ChildrenService.updateAvatar(childId, parentId, avatarUrl);
         return sendSuccess(res, data, "Avatar updated successfully", httpStatus.OK);
     })
+    static listChildrenWithLastMessage = asyncHandler(async (req, res) => {
+        const userId = req.user.id;
+        const data = await ChildrenService.listChildrenWithLastMessage(userId);
+        return sendSuccess(res, data, "Children with last message fetched", httpStatus.OK);
+    });
 }

@@ -21,6 +21,7 @@ childrenRouter.put(
   ChildrenController.updateChild
 );
 childrenRouter.get("/list", authenticateToken, ChildrenController.listChildren);
+childrenRouter.get("/last-message", authenticateToken, ChildrenController.listChildrenWithLastMessage);
 childrenRouter.delete(
   "/delete/:id",
   authenticateToken,
