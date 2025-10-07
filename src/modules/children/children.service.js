@@ -50,7 +50,7 @@ export default class ChildrenService {
             });
         }
     }
-    
+
     static async updateChild(reqBody) {
         const { childId, firstName, dob, state, gender, avatar } = reqBody;
         const parentId = reqBody.user.id;
@@ -91,6 +91,7 @@ export default class ChildrenService {
         return children.map((child) => ({
             _id: child._id,
             firstName: child.firstName,
+            avatar: child.avatar || null,
             dob: child.dob,
             state: child.state,
             gender: child.gender,
