@@ -1,75 +1,37 @@
 import { AuthService } from "./auth.service.js";
 const authService = new AuthService();
-import { sendSuccess, sendError } from "../../utils/responseHelper.js";
+import { sendSuccess } from "../../utils/responseHelper.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
+import asyncHandler from "../../utils/asyncHandler.js";
 
 export class AuthController {
-  async register(req, res) {
-    try {
-      const data = await authService.register(req.body);
-      sendSuccess(
-        res,
-        data,
-        "User Registered Successfully",
-        HTTPStatusCode.CREATED
-      );
-    } catch (error) {
-      sendError(res, error.message, HTTPStatusCode.INTERNAL_SERVER_ERROR);
-    }
-  }
+  register = asyncHandler(async (req, res) => {
+    const data = await authService.register(req.body);
+    sendSuccess(res, data, "User Registered Successfully", HTTPStatusCode.CREATED);
+  });
 
-  async login(req, res) {
-    try {
-      const data = await authService.login(req.body);
-      sendSuccess(res, data, "Login Successful", HTTPStatusCode.OK);
-    } catch (error) {
-      sendError(res, error.message, HTTPStatusCode.INTERNAL_SERVER_ERROR);
-    }
-  }
+  login = asyncHandler(async (req, res) => {
+    const data = await authService.login(req.body);
+    sendSuccess(res, data, "Login Successful", HTTPStatusCode.OK);
+  });
 
-  async verifyOtp(req, res) {
-    try {
-      const data = await authService.verifyOtp(req.body);
-      sendSuccess(
-        res,
-        data,
-        "Verified",
-        HTTPStatusCode.OK
-      );
-    } catch (error) {
-      sendError(res, error.message, HTTPStatusCode.INTERNAL_SERVER_ERROR);
-    }
-  }
+  verifyOtp = asyncHandler(async (req, res) => {
+    const data = await authService.verifyOtp(req.body);
+    sendSuccess(res, data, "Verified", HTTPStatusCode.OK);
+  });
 
-  async resendOtp(req, res) {
-    try {
-      const data = await authService.resendOtp(req.body);
-      sendSuccess(res, data, "Otp Resend Successfully", HTTPStatusCode.OK);
-    } catch (error) {
-      sendError(res, error.message, HTTPStatusCode.INTERNAL_SERVER_ERROR);
-    }
-  }
+  resendOtp = asyncHandler(async (req, res) => {
+    const data = await authService.resendOtp(req.body);
+    sendSuccess(res, data, "Otp Resent Successfully", HTTPStatusCode.OK);
+  });
 
-  async changePassword(req, res) {
-    try { 
-      const data = await authService.changePassword(req.body);
-      sendSuccess(
-        res,
-        data,
-        "Password Changed Successfully",
-        HTTPStatusCode.OK
-      );
-    } catch (error) {
-      sendError(res, error.message, HTTPStatusCode.INTERNAL_SERVER_ERROR);
-    }
-  }
+  changePassword = asyncHandler(async (req, res) => {
+    const data = await authService.changePassword(req.body);
+    sendSuccess(res, data, "Password Changed Successfully", HTTPStatusCode.OK);
+  });
 
-  async forgotPassword(req, res) {
-    try {
-      const data = await authService.forgotPassword(req.body);
-      sendSuccess(res, data, "Success", HTTPStatusCode.OK);
-    } catch (error) {
-      sendError(res, error.message, HTTPStatusCode.INTERNAL_SERVER_ERROR);
-    }
-  }
+  forgotPassword = asyncHandler(async (req, res) => {
+    const data = await authService.forgotPassword(req.body);
+    sendSuccess(res, data, "Password Reset Successfully", HTTPStatusCode.OK);
+  });
 }

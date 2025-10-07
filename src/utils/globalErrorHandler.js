@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import AppError from "./appError.js";
 
 export const globalErrorHandler = async (error, req, res, next) => {
+  
+
     // ✅ Mongoose Validation Error
     if (error instanceof mongoose.Error.ValidationError) {
         return res.status(400).json({

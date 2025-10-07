@@ -1,30 +1,38 @@
-import User from "../../models/auth.model.js"
+import User from "../../models/auth.model.js";
 import { generateToken } from "../../utils/jwtHelper.js";
-import HTTPStatusCode from "../../utils/httpStatusCode.js";
-import { hashPassword ,comparePassword} from "../../utils/passwordHelper.js";
+import { hashPassword, comparePassword } from "../../utils/passwordHelper.js";
 import { generateOTP } from "../../utils/otpHelper.js";
 import { sendRegistrationOtp } from "../../utils/mailer.js";
+import httpStatus from "http-status";
+import AppError from "../../utils/appError.js";
 
 export class AuthService {
   async register(reqBody) {
-    let { name, email, password } = reqBody;
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      const error = new Error("User already exists");
-      error.statusCode = HTTPStatusCode.CONFLICT;
-      throw error;
+    const { name, email, password } = reqBody;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new AppError({
+        status: false,
+        message: "User already exists",
+        httpStatus: httpStatus.CONFLICT,
+      });
     }
-    let hashedPassword = await hashPassword(password);
-    let otpData = await generateOTP();
-    // Create new user
+
+    const hashedPassword = await hashPassword(password);
+    const otpData = await generateOTP();
+
     const user = await User.create({
       name,
       email,
-      password:hashedPassword,
-      otp: otpData.otp,
+      password: hashedPassword,
+      // otp: otpData.otp,
+      otp: "1234",
       otpExpiredAt: otpData.expiresAt,
     });
-    sendRegistrationOtp(user, otpData)
+
+    await sendRegistrationOtp(user, otpData);
+
     return {
       _id: user._id,
       name: user.name,
@@ -33,57 +41,76 @@ export class AuthService {
   }
 
   async login(reqBody) {
-    let { email, password } = reqBody;
+    const { email, password } = reqBody;
     const user = await User.findOne({ email });
-    if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = HTTPStatusCode.NOT_FOUND;
-      throw error;
-    }
-    const isCorrectPassword = await comparePassword(password, user.password);
 
-    if (!isCorrectPassword) {
-      const error = new Error("Password Incorrect");
-      error.statusCode = HTTPStatusCode.UNAUTHORIZED;
-      throw error;
+    if (!user) {
+      throw new AppError({
+        status: false,
+        message: "User not found",
+        httpStatus: httpStatus.NOT_FOUND,
+      });
     }
+
+    const isPasswordValid = await comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new AppError({
+        status: false,
+        message: "Invalid password",
+        httpStatus: httpStatus.UNAUTHORIZED,
+      });
+    }
+
     if (!user.isEmailVerified) {
-      const error = new Error("Your Account is not verified. Please Verify");
-      error.statusCode = HTTPStatusCode.UNAUTHORIZED;
-      throw error;
+      throw new AppError({
+        status: false,
+        message: "Your account is not verified. Please verify your email.",
+        httpStatus: httpStatus.FORBIDDEN,
+      });
     }
+
     return {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id,user.email, user.role),
+      token: generateToken(user._id, user.email, user.role),
     };
   }
 
   async verifyOtp(reqBody) {
-    let { email, otp } = reqBody;
+    const { email, otp } = reqBody;
+
     const user = await User.findOne({ email });
     if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = HTTPStatusCode.NOT_FOUND;
-      throw error;
-    }
-    if (user.otp != otp) {
-      const error = new Error("Invalid Otp");
-      error.statusCode = HTTPStatusCode.BAD_REQUEST;
-      throw error;
-    }
-    let currentTime = Date.now();
-    if (currentTime > user.otpExpiredAt) {
-      const error = new Error("Otp Expired. Please Click On Resend");
-      error.statusCode = HTTPStatusCode.BAD_REQUEST;
-      throw error;
+      throw new AppError({
+        status: false,
+        message: "User not found",
+        httpStatus: httpStatus.NOT_FOUND,
+      });
     }
 
-    await User.findOneAndUpdate(
-      { email: email },
-      { otp: null, otpExpiredAt: null, isEmailVerified: true }
-    );
+    if (user.otp !== otp) {
+      throw new AppError({
+        status: false,
+        message: "Invalid OTP",
+        httpStatus: httpStatus.BAD_REQUEST,
+      });
+    }
+
+    if (Date.now() > user.otpExpiredAt) {
+      throw new AppError({
+        status: false,
+        message: "OTP has expired. Please request a new one.",
+        httpStatus: httpStatus.BAD_REQUEST,
+      });
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+      otp: null,
+      otpExpiredAt: null,
+      isEmailVerified: true,
+    });
+
     return {
       _id: user._id,
       name: user.name,
@@ -92,19 +119,26 @@ export class AuthService {
   }
 
   async resendOtp(reqBody) {
-    let { email } = reqBody;
+    const { email } = reqBody;
+
     const user = await User.findOne({ email });
     if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = HTTPStatusCode.NOT_FOUND;
-      throw error;
+      throw new AppError({
+        status: false,
+        message: "User not found",
+        httpStatus: httpStatus.NOT_FOUND,
+      });
     }
-    let otpData = generateOTP();
 
-    await User.findOneAndUpdate(
-      { email: email },
-      { otp: "1234", otpExpiredAt: (await otpData).expiresAt }
-    );
+    const otpData = generateOTP();
+
+    await User.findByIdAndUpdate(user._id, {
+      otp: otpData.otp,
+      otpExpiredAt: otpData.expiresAt,
+    });
+
+    await sendRegistrationOtp(user, otpData);
+
     return {
       _id: user._id,
       name: user.name,
@@ -112,40 +146,45 @@ export class AuthService {
     };
   }
 
-    async changePassword(reqBody) {
-    let { newPassword} = reqBody;
-  
-    const user = await User.findOne({ _id:reqBody.user.id });
-    if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = HTTPStatusCode.NOT_FOUND;
-      throw error;
+  async changePassword(reqBody) {
+    const { newPassword, user } = reqBody;
+
+    const existingUser = await User.findById(user.id);
+    if (!existingUser) {
+      throw new AppError({
+        status: false,
+        message: "User not found",
+        httpStatus: httpStatus.NOT_FOUND,
+      });
     }
-    let hashedPassword=await hashPassword(newPassword)
-    await User.findOneAndUpdate(
-      { _id:reqBody.user.id },
-      { password:hashedPassword }
-    );
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    await User.findByIdAndUpdate(user.id, { password: hashedPassword });
+
     return {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
+      _id: existingUser._id,
+      name: existingUser.name,
+      email: existingUser.email,
     };
   }
 
-    async forgotPassword(reqBody) {
-    let { email ,password} = reqBody;
+  async forgotPassword(reqBody) {
+    const { email, password } = reqBody;
+
     const user = await User.findOne({ email });
     if (!user) {
-      const error = new Error("User not found");
-      error.statusCode = HTTPStatusCode.NOT_FOUND;
-      throw error;
+      throw new AppError({
+        status: false,
+        message: "User not found",
+        httpStatus: httpStatus.NOT_FOUND,
+      });
     }
-    let hashedPassword=await hashPassword(password)
-    await User.findOneAndUpdate(
-      { email: email },
-      { password:hashedPassword }
-    );
+
+    const hashedPassword = await hashPassword(password);
+
+    await User.findByIdAndUpdate(user._id, { password: hashedPassword });
+
     return {
       _id: user._id,
       name: user.name,
@@ -153,5 +192,3 @@ export class AuthService {
     };
   }
 }
-
-
