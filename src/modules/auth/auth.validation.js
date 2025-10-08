@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { Role } from "../../utils/constants.js";
 export const signupSchema = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).optional().allow("",null),
+  name: Joi.string().min(3).max(50).optional().allow("",null),
   email: Joi.string().email().required(),
   password: Joi.string()
     .pattern(
