@@ -1,38 +1,42 @@
-import express from "express"; // if using ES modules
-// const express = require("express"); // if using CommonJS
-import { globalErrorHandler } from "./src/utils/globalErrorHandler.js";
+import express from "express";
 import httpStatus from "http-status";
+import { connectDB } from "./src/config/dbConnection.js";
+import { globalErrorHandler } from "./src/utils/globalErrorHandler.js";
+import router from "./src/routes/index.js";
+
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-// Define a simple route
-app.get("/home", async (req, res) => {
+
+// Test route
+app.get("/home", (req, res) => {
   res.send("Server ready.....!");
 });
 
-// Routes
-import router from "./src/routes/index.js";
+// Main routes
 app.use("/api", router);
 
-// Catch-all middleware for invalid routes
-// app.use("*", (req, res) => {
-//    sendError(res, "Invalid route", HTTPStatusCode.NOT_FOUND);
-// });
-
-import { connectDB } from "./src/config/dbConnection.js";
-import { sendError } from "./src/utils/responseHelper.js";
-import HTTPStatusCode from "./src/utils/httpStatusCode.js";
-
-connectDB();
-app.use((_req, res) => {
+// Handle unknown routes
+app.use((req, res) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
-    message: "Path not found",
+    message: `Route '${req.originalUrl}' not found`,
   });
 });
 
+// Global error handler
 app.use(globalErrorHandler);
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+
+// Start server only after DB connection
+(async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Failed to connect to database:", err);
+    process.exit(1);
+  }
+})();
