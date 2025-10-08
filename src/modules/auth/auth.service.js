@@ -130,8 +130,7 @@ export class AuthService {
       });
     }
 
-    const otpData = generateOTP();
-
+    const otpData =  await generateOTP();
     await User.findByIdAndUpdate(user._id, {
       otp: otpData.otp,
       otpExpiredAt: otpData.expiresAt,
