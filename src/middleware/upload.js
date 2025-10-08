@@ -10,7 +10,7 @@ const validateFile = (file, allowedTypes = null) => {
         // Videos
         'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/webm',
         // Audio
-        'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/webm'
+        'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/webm', 'audio/wave'
     ];
 
     const allowedFileTypes = allowedTypes || defaultAllowedTypes;
