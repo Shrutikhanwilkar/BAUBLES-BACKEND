@@ -131,8 +131,6 @@ export class AuthService {
     }
 
     const otpData =  await generateOTP();
-    console.log(user)
-    console.log(otpData)
     await User.findByIdAndUpdate(user._id, {
       otp: otpData.otp,
       otpExpiredAt: otpData.expiresAt,
