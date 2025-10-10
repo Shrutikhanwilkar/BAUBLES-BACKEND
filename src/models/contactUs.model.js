@@ -7,6 +7,7 @@ const contactUsSchema = new Schema(
         name: { type: String, required: true, trim: true },
         email: { type: String, required: true, trim: true },
         mobile: { type: String, trim: true },
+        countryCode:{ type: String, trim: true },
         message: { type: String, required: true },
         type:{
             type:String,

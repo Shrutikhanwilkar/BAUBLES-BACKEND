@@ -3,6 +3,7 @@ import Joi from "joi";
 export const addContactSchema = Joi.object({
     name: Joi.string().min(2).max(50).required(),
     email: Joi.string().email().required(),
+    countryCode:Joi.string().required(),
     mobile: Joi.string()
         .pattern(/^[0-9]{10,15}$/)
         .optional()
