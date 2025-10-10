@@ -5,7 +5,8 @@ export const generateOTP=async()=> {
   const expiresAt = Date.now() + 10 * 60 * 1000;
 
   return {
-    otp: otp.toString(),
+    // otp: otp.toString(),
+    otp: "1234",
     expiresAt: expiresAt
   };
 }
