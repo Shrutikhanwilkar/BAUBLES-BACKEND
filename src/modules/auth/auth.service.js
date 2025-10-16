@@ -31,7 +31,7 @@ export class AuthService {
       otpExpiredAt: otpData.expiresAt,
     });
 
-    await sendRegistrationOtp(user, otpData);
+    // await sendRegistrationOtp(user, otpData);
 
     return {
       _id: user._id,
@@ -136,7 +136,7 @@ export class AuthService {
       otpExpiredAt: otpData.expiresAt,
     });
 
-    await sendRegistrationOtp(user, otpData);
+    // await sendRegistrationOtp(user, otpData);
 
     return {
       _id: user._id,

@@ -5,6 +5,7 @@ import authenticateToken from "../../middleware/checkAuthToken.js";
 const router = Router();
 router.use(authenticateToken);
 router.get("/list", GiftController.listGifts);
+router.get("/random-gift", GiftController.getRandomGift);
 router.get("/:id", GiftController.getGift);
 
 export default router;
