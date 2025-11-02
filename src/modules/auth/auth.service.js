@@ -144,7 +144,7 @@ export class AuthService {
       email: user.email,
     };
   }
-
+  
   async changePassword(reqBody) {
     const { newPassword, user } = reqBody;
 

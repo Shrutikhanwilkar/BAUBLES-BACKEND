@@ -3,11 +3,18 @@ import httpStatus from "http-status";
 import { connectDB } from "./src/config/dbConnection.js";
 import { globalErrorHandler } from "./src/utils/globalErrorHandler.js";
 import router from "./src/routes/index.js";
-
+import cors from "cors"
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: "*",
+};
+
+app.use(cors(corsOptions));
 
 // Test route
 app.get("/home", (req, res) => {
