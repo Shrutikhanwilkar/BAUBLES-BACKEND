@@ -143,6 +143,6 @@ export default class MusicService {
         }
 
         await music.deleteOne();
-        return music;
+        return null;
     }
 }

@@ -12,6 +12,6 @@ router.post("/create", validate(addCategorySchema), StatusCategoryController.add
 router.put("/update/:categoryId", validate(updateCategorySchema), StatusCategoryController.updateCategory);
 router.get("/list", StatusCategoryController.listCategories);
 router.get("/:categoryId", StatusCategoryController.getCategory);
-// router.delete("/delete/:categoryId", StatusCategoryController.deleteCategory);
+router.delete("/:categoryId", StatusCategoryController.deleteCategory);
 
 export default router;

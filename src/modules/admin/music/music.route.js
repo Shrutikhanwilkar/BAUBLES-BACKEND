@@ -11,6 +11,6 @@ router.post("/create", uploadSingleToFirebase("musicFile"), MusicController.addM
 router.put("/update/:musicId", MusicController.updateMusic);
 router.get("/list", MusicController.listMusic);
 router.get("/:musicId", MusicController.getMusic);
-router.delete("/delete/:musicId", MusicController.deleteMusic);
+router.delete("/:musicId", MusicController.deleteMusic);
 
 export default router;

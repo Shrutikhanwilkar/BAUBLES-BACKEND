@@ -52,6 +52,6 @@ export default class StatusCategoryService {
         }
 
         await category.deleteOne();
-        return category;
+        return null;
     }
 }
