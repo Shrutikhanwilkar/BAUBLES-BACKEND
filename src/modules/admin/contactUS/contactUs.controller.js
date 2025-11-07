@@ -10,7 +10,8 @@ export default class ContactUsController {
     });
 
     static listContacts = asyncHandler(async (req, res) => {
-        const data = await ContactUsService.listContacts();
+        
+        const data = await ContactUsService.listContacts(req.query);
         return sendSuccess(res, data, "Contacts fetched successfully", httpStatus.OK);
     });
 

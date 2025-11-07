@@ -5,13 +5,14 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: false },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    mobile: { type: String, unique: true },
     avatar: {
       type: String,
       default: null,
     },
     role: { type: String, required: true, default: Role.USER },
     isEmailVerified: { type: Boolean, default: false },
-    otp: { type: String},
+    otp: { type: String },
     otpExpiredAt: { type: Number }
   },
   { timestamps: true }
