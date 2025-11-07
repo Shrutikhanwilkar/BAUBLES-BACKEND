@@ -1,6 +1,6 @@
 import httpStatus from "http-status";
-import ContactUs from "../../models/contactUs.model.js";
-import AppError from "../../utils/appError.js";
+import ContactUs from "../../../models/contactUs.model.js";
+import AppError from "../../../utils/appError.js";
 
 export default class ContactUsService {
     static async create(reqBody) {
@@ -8,9 +8,33 @@ export default class ContactUsService {
         return contact;
     }
 
-    static async listContacts() {
-        return await ContactUs.find().sort({ createdAt: -1 });
+    static async listContacts({ page = 1, limit = 10, type }) {
+        const skip = (page - 1) * limit;
+
+        const match = {};
+        if (type) {
+            match.type = type;
+        }
+        const [contacts, total] = await Promise.all([
+            ContactUs.find(match)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(Number(limit))
+                .lean(),
+            ContactUs.countDocuments(match),
+        ]);
+
+        return {
+            contacts,
+            pagination: {
+                total,
+                page: Number(page),
+                limit: Number(limit),
+                totalPages: Math.ceil(total / limit),
+            },
+        };
     }
+    
     static async getContact(contactId) {
         const contact = await ContactUs.findById(contactId);
         if (!contact) {
