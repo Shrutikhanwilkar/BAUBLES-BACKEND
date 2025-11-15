@@ -5,7 +5,7 @@ import { generateOTP } from "../../utils/otpHelper.js";
 import { sendRegistrationOtp } from "../../utils/mailer.js";
 import httpStatus from "http-status";
 import AppError from "../../utils/appError.js";
-
+import HTTPStatusCode from "../../utils/httpStatusCode.js";
 export class AuthService {
   async register(reqBody) {
     const { name, email, password } = reqBody;
@@ -15,7 +15,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "User already exists",
-        httpStatus: httpStatus.CONFLICT,
+        httpStatus: HTTPStatusCode.CONFLICT,
       });
     }
 
@@ -48,7 +48,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "User not found",
-        httpStatus: httpStatus.NOT_FOUND,
+        httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
 
@@ -57,7 +57,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "Invalid password",
-        httpStatus: httpStatus.UNAUTHORIZED,
+        httpStatus: HTTPStatusCode.UNAUTHORIZED,
       });
     }
 
@@ -65,7 +65,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "Your account is not verified. Please verify your email.",
-        httpStatus: httpStatus.FORBIDDEN,
+        httpStatus: HTTPStatusCode.FORBIDDEN,
       });
     }
 
@@ -85,7 +85,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "User not found",
-        httpStatus: httpStatus.NOT_FOUND,
+        httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
 
@@ -93,7 +93,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "Invalid OTP",
-        httpStatus: httpStatus.BAD_REQUEST,
+        httpStatus: HTTPStatusCode.BAD_REQUEST,
       });
     }
 
@@ -101,7 +101,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "OTP has expired. Please request a new one.",
-        httpStatus: httpStatus.BAD_REQUEST,
+        httpStatus: HTTPStatusCode.BAD_REQUEST,
       });
     }
 
@@ -126,7 +126,7 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "User not found",
-        httpStatus: httpStatus.NOT_FOUND,
+        httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
 
@@ -154,7 +154,7 @@ console.log(otpData)
       throw new AppError({
         status: false,
         message: "User not found",
-        httpStatus: httpStatus.NOT_FOUND,
+        httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
 
@@ -177,7 +177,7 @@ console.log(otpData)
       throw new AppError({
         status: false,
         message: "User not found",
-        httpStatus: httpStatus.NOT_FOUND,
+        httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
 

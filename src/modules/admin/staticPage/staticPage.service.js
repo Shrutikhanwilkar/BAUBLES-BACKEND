@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import StaticPage from "../../../models/staticPage.model.js";
 import AppError from "../../../utils/appError.js";
-
+import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 export default class StaticPageService {
 
     static async addPage(reqBody) {
@@ -13,9 +13,9 @@ export default class StaticPageService {
         const page = await StaticPage.findById(id);
         if (!page) {
             throw new AppError({
-                status: false,
-                message: "Page not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Page not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -31,9 +31,9 @@ export default class StaticPageService {
         const page = await StaticPage.findById(pageId);
         if (!page) {
             throw new AppError({
-                status: false,
-                message: "Page not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Page not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
         return page;
@@ -42,9 +42,9 @@ export default class StaticPageService {
         const page = await StaticPage.findById(pageId);
         if (!page) {
             throw new AppError({
-                status: false,
-                message: "Page not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Page not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 

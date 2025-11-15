@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import Music from "../../../models/music.model.js";
 import AppError from "../../../utils/appError.js";
 import mongoose from "mongoose";
-
+import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 export default class MusicService {
     static async addMusic(reqBody) {
 
@@ -14,9 +14,9 @@ export default class MusicService {
         const music = await Music.findById(id);
         if (!music) {
             throw new AppError({
-                status: false,
-                message: "Music not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Music not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -90,9 +90,9 @@ export default class MusicService {
     static async getMusic(musicId) {
         if (!mongoose.Types.ObjectId.isValid(musicId)) {
             throw new AppError({
-                status: false,
-                message: "Invalid music ID",
-                httpStatus: httpStatus.BAD_REQUEST,
+              status: false,
+              message: "Invalid music ID",
+              httpStatus: HTTPStatusCode.BAD_REQUEST,
             });
         }
 
@@ -124,9 +124,9 @@ export default class MusicService {
 
         if (!result || result.length === 0) {
             throw new AppError({
-                status: false,
-                message: "Music not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Music not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -136,9 +136,9 @@ export default class MusicService {
         const music = await Music.findById(musicId);
         if (!music) {
             throw new AppError({
-                status: false,
-                message: "Music not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Music not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 

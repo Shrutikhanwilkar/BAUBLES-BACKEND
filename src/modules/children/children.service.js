@@ -3,7 +3,8 @@ import httpStatus from "http-status";
 import Children from "../../models/children.model.js";
 import AppError from "../../utils/appError.js"
 import { removeFromFirebase } from "../../middleware/upload.js";
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import HTTPStatusCode from "../../utils/httpStatusCode.js";
 export default class ChildrenService {
 
     static async addChild(reqBody) {
@@ -13,9 +14,9 @@ export default class ChildrenService {
         const childCount = await Children.countDocuments({ parentId });
         if (childCount >= 5) {
             throw new AppError({
-                status: false,
-                message: "You cannot add more than 5 children",
-                httpStatus: httpStatus.BAD_REQUEST,
+              status: false,
+              message: "You cannot add more than 5 children",
+              httpStatus: HTTPStatusCode.BAD_REQUEST,
             });
         }
 
@@ -44,9 +45,9 @@ export default class ChildrenService {
                 await removeFromFirebase(avatar);
             }
             throw new AppError({
-                message: "Failed to add child",
-                httpStatus: httpStatus.INTERNAL_SERVER_ERROR,
-                details: err.message,
+              message: "Failed to add child",
+              httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,
+              details: err.message,
             });
         }
     }
@@ -57,9 +58,9 @@ export default class ChildrenService {
         const child = await Children.findOne({ _id: childId, parentId });
         if (!child) {
             throw new AppError({
-                status: false,
-                message: "Child not found or not authorized",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Child not found or not authorized",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -103,9 +104,9 @@ export default class ChildrenService {
         const child = await Children.findOne({ _id: childId, parentId });
         if (!child) {
             throw new AppError({
-                status: false,
-                message: "Child not found or not authorized",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Child not found or not authorized",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -120,8 +121,8 @@ export default class ChildrenService {
         const existingAvatar = child.avatar
         if (!child) {
             throw new AppError({
-                message: "Child not found or not authorized",
-                httpStatus: httpStatus.NOT_FOUND,
+              message: "Child not found or not authorized",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
         try {
@@ -137,9 +138,9 @@ export default class ChildrenService {
             await removeFromFirebase(avatarUrl);
 
             throw new AppError({
-                message: "Failed to update avatar",
-                httpStatus: httpStatus.INTERNAL_SERVER_ERROR,
-                details: err.message,
+              message: "Failed to update avatar",
+              httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,
+              details: err.message,
             });
         }
 

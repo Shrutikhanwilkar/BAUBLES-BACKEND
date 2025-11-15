@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import StatusCategory from "../../../models/statusCategory.model.js";
 import AppError from "../../../utils/appError.js";
-
+import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 export default class StatusCategoryService {
 
     static async addCategory(reqBody) {
@@ -13,9 +13,9 @@ export default class StatusCategoryService {
         const category = await StatusCategory.findById(id);
         if (!category) {
             throw new AppError({
-                status: false,
-                message: "Status Category not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Status Category not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -33,9 +33,9 @@ export default class StatusCategoryService {
         const category = await StatusCategory.findById(id);
         if (!category) {
             throw new AppError({
-                status: false,
-                message: "Status Category not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Status Category not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
         return category;
@@ -45,9 +45,9 @@ export default class StatusCategoryService {
         const category = await StatusCategory.findById(id);
         if (!category) {
             throw new AppError({
-                status: false,
-                message: "Status Category not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Status Category not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 

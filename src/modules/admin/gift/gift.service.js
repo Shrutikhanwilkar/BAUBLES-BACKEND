@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import Gift from "../../../models/gift.model.js"
 import AppError from "../../../utils/appError.js";
 import { removeFromFirebase } from "../../../middleware/upload.js";
-
+import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 export default class GiftService {
     static async create(reqBody) {
         const gift = await Gift.create(reqBody);
@@ -25,9 +25,9 @@ export default class GiftService {
         const gift = await Gift.findById(giftId);
         if (!gift) {
             throw new AppError({
-                status: false,
-                message: "Gift not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Gift not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
         return gift;
@@ -45,9 +45,9 @@ export default class GiftService {
                     await removeFromFirebase(newImage);
                 }
                 throw new AppError({
-                    status: false,
-                    message: "Gift not found",
-                    httpStatus: httpStatus.NOT_FOUND,
+                  status: false,
+                  message: "Gift not found",
+                  httpStatus: HTTPStatusCode.NOT_FOUND,
                 });
             }
             const updatedGift = await Gift.findByIdAndUpdate(giftId, reqBody, {
@@ -73,9 +73,9 @@ export default class GiftService {
         const gift = await Gift.findById(giftId);
         if (!gift) {
             throw new AppError({
-                status: false,
-                message: "Gift not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Gift not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
         await gift.deleteOne();

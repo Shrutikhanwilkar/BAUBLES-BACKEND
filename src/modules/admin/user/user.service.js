@@ -1,11 +1,8 @@
 import mongoose from "mongoose";
 import User from "../../../models/auth.model.js"
 import Children from "../../../models/children.model.js";
-import Message from "../../../models/message.model.js";
-import StatusCategory from "../../../models/statusCategory.model.js";
 import AppError from "../../../utils/appError.js";
-import httpStatus from "http-status";
-
+import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 export default class UserService {
     static async listUsers({ page = 1, limit = 10, search }) {
         page = Number(page) || 1;
@@ -72,8 +69,8 @@ export default class UserService {
     static async getUserDetails(userId) {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             throw new AppError({
-                message: "Invalid user ID",
-                httpStatus: httpStatus.BAD_REQUEST,
+              message: "Invalid user ID",
+              httpStatus: HTTPStatusCode.BAD_REQUEST,
             });
         }
 
@@ -83,8 +80,8 @@ export default class UserService {
 
         if (!user) {
             throw new AppError({
-                message: "User not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              message: "User not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
