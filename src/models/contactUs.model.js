@@ -9,6 +9,8 @@ const contactUsSchema = new Schema(
         mobile: { type: String, trim: true },
         countryCode:{ type: String, trim: true },
         message: { type: String, required: true },
+        isResolved:{type: Boolean, required: true,default:false},
+        solution:{type: String, required: true},
         type:{
             type:String,
             required:true,

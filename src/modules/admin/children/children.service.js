@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Children from "../../../models/children.model.js";
 import AppError from "../../../utils/appError.js";
 import httpStatus from "http-status";
-
+import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 export default class AdminChildrenService {
     static async listChildren({ page = 1, limit = 10, search, state, gender }) {
         const skip = (page - 1) * limit;
@@ -70,8 +70,8 @@ export default class AdminChildrenService {
     static async getChildById(childId) {
         if (!mongoose.Types.ObjectId.isValid(childId)) {
             throw new AppError({
-                message: "Invalid child ID",
-                httpStatus: httpStatus.BAD_REQUEST,
+              message: "Invalid child ID",
+              httpStatus: HTTPStatusCode.BAD_REQUEST,
             });
         }
 
@@ -104,8 +104,8 @@ export default class AdminChildrenService {
 
         if (!result.length) {
             throw new AppError({
-                message: "Child not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              message: "Child not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 

@@ -40,7 +40,7 @@ export default class GiftService {
       throw new AppError({
         status: false,
         message: "Gift not found",
-        httpStatus: httpStatus.NOT_FOUND,
+        httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
     return gift;

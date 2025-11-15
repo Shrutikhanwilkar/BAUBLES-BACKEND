@@ -4,6 +4,7 @@ import AppError from "../../utils/appError.js";
 import Children from "../../models/children.model.js";
 import mongoose from "mongoose";
 import httpStatus from "http-status";
+import HTTPStatusCode from "../../utils/httpStatusCode.js";
 class MessageService {
 
     // Send a message to a child for a given status category
@@ -12,9 +13,9 @@ class MessageService {
         const child = await Children.findById(childId);
         if (!child) {
             throw new AppError({
-                status: false,
-                message: "Child not found",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "Child not found",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
 
@@ -22,9 +23,9 @@ class MessageService {
         const musics = await Music.find({ statusCategory: statusCategoryId });
         if (!musics.length) {
             throw new AppError({
-                status: false,
-                message: "No music found for this status category",
-                httpStatus: httpStatus.NOT_FOUND,
+              status: false,
+              message: "No music found for this status category",
+              httpStatus: HTTPStatusCode.NOT_FOUND,
             });
         }
         const randomMusic = musics[Math.floor(Math.random() * musics.length)];

@@ -1,64 +1,77 @@
-import nodemailer from "nodemailer";
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import pug from "pug";
 import path from "path";
 
+const sesClient = new SESClient({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
 const appName = process.env.APP_NAME;
-
-// Send email in background safely
-const sendEmail = async (name, email, subject, message) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: process.env.MAIL_PORT,
-            secure: process.env.MAIL_PORT == 465,
-            auth: {
-                user: process.env.MAIL_USERNAME,
-                pass: process.env.MAIL_PASSWORD,
-            },
-        });
-
-        transporter.verify((error, success) => {
-            if (error) {
-                console.error("Email server verification failed:", error);
-            } else {
-                console.log("Email server is ready");
-            }
-        });
-
-        const info = await transporter.sendMail({
-            from: `${appName} <${process.env.SMTP_FROM_ADDRESS}>`,
-            to: email,
-            subject,
-            html: message,
-        });
-
-        console.log("Email sent successfully:", info.messageId);
-    } catch (error) {
-        console.error("Failed to send email:", error.message);
-        // No error is thrown, runs silently in background
-    }
-};
-
-// Template directory
 const templateDir = path.join(process.cwd(), "src", "templates");
 
-// Send registration OTP without blocking
+// Send Email using AWS SES
+export const sendSES = async (to, subject, html) => {
+  try {
+    const params = {
+      Source: `${appName} <${process.env.SMTP_FROM_ADDRESS}>`,
+      Destination: { ToAddresses: [to] },
+      Message: {
+        Subject: { Data: subject },
+        Body: { Html: { Data: html } },
+      },
+    };
+    await sesClient.send(new SendEmailCommand(params));
+
+    console.log("SES Email sent:", subject);
+    return true;
+  } catch (err) {
+    console.log(err)
+    console.error("SES Email failed:", err.message);
+    return false;
+  }
+};
+
+// ----- Registration OTP -----
 export const sendRegistrationOtp = (userData, otpData) => {
-    try {
-        const templatePath = path.join(templateDir, "signupOtp.pug");
-        const messageBody = pug.renderFile(templatePath, {
-            name: userData.name,
-            email: userData.email,
-            otp: otpData.otp,
-        });
+  try {
+    const templatePath = path.join(templateDir, "signupOtp.pug");
 
-        const subject = "Registration OTP for Baubles";
+    const html = pug.renderFile(templatePath, {
+      name: userData.name,
+      email: userData.email,
+      otp: otpData.otp,
+    });
 
-        // Run in background, no await
-        sendEmail(userData.name, userData.email, subject, messageBody);
-    } catch (err) {
-        console.error("Failed to render/send OTP email:", err.message);
-    }
+    const subject = "Registration OTP for Baubles";
 
-    return true; // Always return true immediately
+    sendSES(userData.email, subject, html); // Background send
+  } catch (err) {
+    console.error("Failed to render/send OTP email:", err.message);
+  }
+
+  return true;
+};
+
+// ----- Contact Us Response -----
+export const sendContactSolution = (contact, solutionMessage) => {
+  try {
+    const templatePath = path.join(templateDir, "contactSolution.pug");
+    const html = pug.renderFile(templatePath, {
+      name: contact.name,
+      email: contact.email,
+      message: solutionMessage,
+      query:contact.message
+    });
+    const subject = "Your Contact Query Response – Baubles";
+
+    sendSES(contact.email, subject, html);
+  } catch (err) {
+    console.error("Failed to send contact solution email:", err.message);
+  }
+
+  return true;
 };

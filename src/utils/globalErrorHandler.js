@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import AppError from "./appError.js";
-
+import HTTPStatusCode from "./httpStatusCode.js";
 export const globalErrorHandler = async (error, req, res, next) => {
   
 
@@ -49,11 +49,11 @@ export const globalErrorHandler = async (error, req, res, next) => {
 
     // ✅ Custom AppError
     if (error instanceof AppError) {
-        return res.status(error.httpStatus || 400).json({
-            status: false,
-            success: false,
-            statusCode: error.httpStatus || 400,
-            message: error.message,
+        return res.status(error.HTTPStatusCode || 400).json({
+          status: false,
+          success: false,
+          statusCode: error.HTTPStatusCode || 400,
+          message: error.message,
         });
     }
 

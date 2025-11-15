@@ -3,12 +3,32 @@ html(lang="en")
   head
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title Mail Verification 
-  body(style="font-family: Arial, sans-serif; color: #333;")
-    h2(style="color:#1f8ef1;") Email Verification OTP
-    p Hi #{name},
-    p Please use the OTP below to verify your account:#{email}
-    h1(style="letter-spacing:4px; background:#f5f7fa; padding:10px 20px; border-radius:6px; display:inline-block;") #{otp}
-    p This OTP will expire in 10 minutes.
-    p Thanks,
-    p The #{appName} Team
+    title Contact Query Response
+  body(style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 20px; background:#f5f5f5;")
+    
+    // Main Container
+    div(style="max-width: 600px; margin: auto; background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);")
+
+      h2(style="color:#1f8ef1; margin-bottom: 10px;") Contact Query Update
+
+      p(style="font-size: 16px; margin-bottom: 10px;")
+        | Hi #{name},
+
+      p(style="font-size: 16px; margin-bottom: 20px;")
+        | We have reviewed your contact request. Below is the update regarding your query.
+
+      h3(style="margin: 15px 0 5px; color:#444;") Your Query:
+      p(style="background:#f5f7fa; padding:12px 15px; border-radius:6px; margin-bottom: 20px;")
+        | #{query}
+
+      h3(style="margin: 15px 0 5px; color:#444;") Our Response:
+      p(style="background:#e8f4ff; padding:12px 15px; border-radius:6px; border-left:5px solid #1f8ef1; margin-bottom: 20px; white-space:pre-line;")
+        | #{solution}
+
+      p(style="font-size: 15px; margin-top: 20px;")
+        | If you have more questions, feel free to reply to this email.
+
+      p(style="margin-top: 25px; font-size: 15px; color:#555;")
+        | Thanks,
+        br
+        | The #{appName} Team
