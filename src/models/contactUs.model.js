@@ -10,7 +10,7 @@ const contactUsSchema = new Schema(
         countryCode:{ type: String, trim: true },
         message: { type: String, required: true },
         isResolved:{type: Boolean, required: true,default:false},
-        solution:{type: String, required: true},
+        solution:{type: String, required: false,default:""},
         type:{
             type:String,
             required:true,

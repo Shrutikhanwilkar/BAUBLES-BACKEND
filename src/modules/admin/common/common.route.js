@@ -19,6 +19,7 @@ router.put(
 );
 router.put(
   "/update-profile",
+  uploadSingleToFirebase("avatar"),
   validate(updateProfileSchema),
   CommonController.updateProfile
 );
@@ -32,23 +33,11 @@ router.get(
   authenticateToken,
   CommonController.getDashboardStats
 );
+
 router.post(
-  "/dashboard-upload-vedio",
-  uploadSingleToFirebase("videoFile"),
-  CommonController.uploadDashboardVedio
+  "/add-dashboard-link",
+  authenticateToken,
+  CommonController.addDashboardVedio
 );
 
-router.get("/dashboard-vedios", CommonController.getAllDashboardVideos);
-
-// UPDATE
-router.patch(
-  "/dashboard-vedio/update/:id",
-  CommonController.updateDashboardVideo
-);
-
-// DELETE
-router.delete(
-  "/dashboard-vedio/delete/:id",
-  CommonController.deleteDashboardVideo
-);
 export default router;
