@@ -23,7 +23,7 @@ export default class CommonController {
     );
   });
   static updateProfile = asyncHandler(async (req, res) => {
-    const avatarUrl = req.body.avatar;
+    // const avatarUrl = req.body.avatar;
     const data = await CommonService.updateProfile(req.user.id, req.body);
     return sendSuccess(
       res,
@@ -52,67 +52,12 @@ export default class CommonController {
       HTTPStatusCode.OK
     );
   });
-  static uploadDashboardVedio = asyncHandler(async (req, res) => {
-    const avatarUrl = req.body.videoFile;
-
-    const payload = {
-      title: req.body.title,
-      description: req.body.description,
-      duration: req.body.duration,
-      status: req.body.status,
-    };
-
-    const data = await CommonService.uploadDashboardVedio(avatarUrl, payload);
-
+  static addDashboardVedio = asyncHandler(async (req, res) => {
+    const data = await CommonService.addDashboardVedio(req.body);
     return sendSuccess(
       res,
       data,
-      "Dashboard video uploaded successfully",
-      HTTPStatusCode.OK
-    );
-  });
-
-  // GET ALL
-  static getAllDashboardVideos = asyncHandler(async (req, res) => {
-    const videos = await CommonService.getAllDashboardVideos();
-
-    return sendSuccess(
-      res,
-      videos,
-      "All dashboard videos fetched",
-      HTTPStatusCode.OK
-    );
-  });
-
-  static updateDashboardVideo = asyncHandler(async (req, res) => {
-    const payload = {
-      title: req.body.title,
-      description: req.body.description,
-      duration: req.body.duration,
-      status: req.body.status,
-    };
-
-    const updated = await CommonService.updateDashboardVideo(
-      req.params.id,
-      payload
-    );
-
-    return sendSuccess(
-      res,
-      updated,
-      "Dashboard video updated successfully",
-      HTTPStatusCode.OK
-    );
-  });
-
-  // DELETE
-  static deleteDashboardVideo = asyncHandler(async (req, res) => {
-    await CommonService.deleteDashboardVideo(req.params.id);
-
-    return sendSuccess(
-      res,
-      null,
-      "Dashboard video deleted successfully",
+      "Uploaded successfully",
       HTTPStatusCode.OK
     );
   });

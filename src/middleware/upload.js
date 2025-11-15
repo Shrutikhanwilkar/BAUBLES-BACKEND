@@ -173,3 +173,72 @@ export const removeFromFirebase = async (fileUrls) => {
     await Promise.all(deletePromises);
     return { success: true, deleted, failed };
 };
+
+export const uploadMultipleToFirebase = (fields) => [
+   
+  upload.fields(fields),
+  
+  async (req, res, next) => {
+    try {
+      if (!req.files) return next();
+      const uploadedUrls = {};
+
+      // Process each field
+      const fileUploadPromises = [];
+
+      for (const fieldName of Object.keys(req.files)) {
+        uploadedUrls[fieldName] = [];
+
+        req.files[fieldName].forEach((file, index) => {
+          validateFile(file);
+
+          const fileName = `uploads/${fieldName}-${Date.now()}-${index}-${uuidv4()}${getFileExtension(
+            file.originalname
+          )}`;
+          const fileRef = bucket.file(fileName);
+
+          const promise = new Promise((resolve, reject) => {
+            const stream = fileRef.createWriteStream({
+              metadata: {
+                contentType: file.mimetype,
+                metadata: {
+                  originalName: file.originalname,
+                  uploadedAt: new Date().toISOString(),
+                },
+              },
+            });
+
+            stream.on("error", reject);
+
+            stream.on("finish", async () => {
+              await fileRef.makePublic();
+              const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+              uploadedUrls[fieldName].push(publicUrl);
+              resolve();
+            });
+
+            stream.end(file.buffer);
+          });
+
+          fileUploadPromises.push(promise);
+        });
+      }
+      await Promise.all(fileUploadPromises);
+
+      // Set into req.body
+      for (const key of Object.keys(uploadedUrls)) {
+        req.body[key] =
+          uploadedUrls[key].length === 1
+            ? uploadedUrls[key][0]
+            : uploadedUrls[key];
+      }
+      next();
+    } catch (err) {
+      console.error("🔥 Firebase Upload Error:", err);
+      return res.status(400).json({
+        success: false,
+        message: err.message || "File upload failed",
+      });
+    }
+  },
+];

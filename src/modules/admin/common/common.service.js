@@ -1,11 +1,11 @@
 import User from "../../../models/auth.model.js";
 import Children from "../../../models/children.model.js";
-import dashboardModel from "../../../models/dashboard.model.js";
 import Gift from "../../../models/gift.model.js";
 import Music from "../../../models/music.model.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 import { removeFromFirebase } from "../../../middleware/upload.js";
 import AppError from "../../../utils/appError.js";
+import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 export default class CommonService {
   static async getDashboardStats() {
     const [userCount, childrenCount, giftCount, musicCount] = await Promise.all(
@@ -122,71 +122,20 @@ export default class CommonService {
       });
     }
   }
-
-  static async uploadDashboardVedio(avatarUrl, payload) {
-    if (!avatarUrl) {
-      throw new AppError({
-        message: "Please select a file to upload!",
-        httpStatus: HTTPStatusCode.BAD_REQUEST,
-      });
-    }
-
+  static async addDashboardVedio(reqBody) {
     try {
-      const newVideo = await dashboardModel.create({
-        title: payload?.title,
-        description: payload?.description,
-        duration: payload?.duration,
-        videoFile: avatarUrl,
-        status: payload?.status || "active",
+      await audioPlaybackModel.findOneAndDelete({ isDashboard: true });
+      let data = await audioPlaybackModel.create({
+        videoFile: reqBody.videoFile,
+        isDashboard: true,
       });
-
-      return newVideo;
+      return data;
     } catch (err) {
-      await removeFromFirebase(avatarUrl); // cleanup
-      console.log(err);
-
       throw new AppError({
-        message: "Failed to upload video",
+        message: "Failed to add dashbaord vedio",
         httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,
         details: err.message,
       });
     }
-  }
-
-  static async getAllDashboardVideos() {
-    return dashboardModel.find().sort({ createdAt: -1 });
-  }
-
-  static async updateDashboardVideo(id, payload) {
-    const updated = await dashboardModel.findByIdAndUpdate(id, payload, {
-      new: true,
-    });
-
-    if (!updated) {
-      throw new AppError({
-        message: "Video not found",
-        httpStatus: HTTPStatusCode.NOT_FOUND,
-      });
-    }
-
-    return updated;
-  }
-
-  static async deleteDashboardVideo(id) {
-    const video = await dashboardModel.findById(id);
-
-    if (!video) {
-      throw new AppError({
-        message: "Video not found",
-        httpStatus: HTTPStatusCode.NOT_FOUND,
-      });
-    }
-
-    await dashboardModel.deleteOne({ _id: id });
-
-    // remove video file from firebase storage
-    await removeFromFirebase(video.videoFile);
-
-    return ;
   }
 }
