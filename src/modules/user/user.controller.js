@@ -4,25 +4,63 @@ import { sendSuccess } from "../../utils/responseHelper.js";
 import UserService from "./user.service.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 export default class UserController {
-    static getProfile = asyncHandler(async (req, res) => {
-        const userId = req.user.id;
-        const data = await UserService.getProfile(userId);
-        return sendSuccess(res, data, "User profile fetched successfully", HTTPStatusCode.OK);
-    });
+  static getProfile = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const data = await UserService.getProfile(userId);
+    return sendSuccess(
+      res,
+      data,
+      "User profile fetched successfully",
+      HTTPStatusCode.OK
+    );
+  });
 
-    static updateProfile = asyncHandler(async (req, res) => {
-        const userId = req.user.id;
-        const data = await UserService.updateProfile(userId, req.body);
-        return sendSuccess(res, data, "User profile updated successfully", HTTPStatusCode.OK);
-    });
-    static updateAvatar = asyncHandler(async (req, res) => {
-        const id = req.user.id;
-        const avatarUrl = req.body.avatar;
-        const data = await UserService.updateAvatar(id, avatarUrl);
-        return sendSuccess(res, data, "Avatar updated successfully", HTTPStatusCode.OK);
-    })
-    static staticData = asyncHandler(async (req, res) => {
-        const data = await UserService.staticData();
-        return sendSuccess(res, data, "Data fetched successfully", HTTPStatusCode.OK);
-    })
+  static updateProfile = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const data = await UserService.updateProfile(userId, req.body);
+    return sendSuccess(
+      res,
+      data,
+      "User profile updated successfully",
+      HTTPStatusCode.OK
+    );
+  });
+  static updateAvatar = asyncHandler(async (req, res) => {
+    const id = req.user.id;
+    const avatarUrl = req.body.avatar;
+    const data = await UserService.updateAvatar(id, avatarUrl);
+    return sendSuccess(
+      res,
+      data,
+      "Avatar updated successfully",
+      HTTPStatusCode.OK
+    );
+  });
+  static staticData = asyncHandler(async (req, res) => {
+    const data = await UserService.staticData();
+    return sendSuccess(
+      res,
+      data,
+      "Data fetched successfully",
+      HTTPStatusCode.OK
+    );
+  });
+  static getAudioPlayback = asyncHandler(async (req, res) => {
+    const data = await UserService.getAudioPlayback();
+    return sendSuccess(
+      res,
+      data,
+      "Data fetched successfully",
+      HTTPStatusCode.OK
+    );
+  });
+  static getDahsboardVedio = asyncHandler(async (req, res) => {
+    const data = await UserService.getDahsboardVedio();
+    return sendSuccess(
+      res,
+      data,
+      "Data fetched successfully",
+      HTTPStatusCode.OK
+    );
+  });
 }
