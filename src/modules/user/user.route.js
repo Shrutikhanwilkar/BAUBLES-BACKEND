@@ -20,4 +20,14 @@ router.put(
   authenticateToken,
   UserController.updateAvatar
 );
+router.get(
+  "/dashboard-vedio",
+  authenticateToken,
+  UserController.getDahsboardVedio
+);
+router.get(
+  "/audio-playback",
+  authenticateToken,
+  UserController.getAudioPlayback
+);
 export default router;

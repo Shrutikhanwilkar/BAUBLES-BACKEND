@@ -86,16 +86,40 @@ export default class UserService {
       .select("name color description")
       .lean();
     const staticPages = await StaticPage.find().sort({ createdAt: -1 }).lean();
-    const dashbaordVedio = await audioPlaybackModel
-      .findOne({ isDashboard: true })
-      .select("videoFile isDashboard _id");
-    const audioPlayBackVideo = await audioPlaybackModel.find({ default: true });
+    // const dashbaordVedio = await audioPlaybackModel
+    //   .findOne({ isDashboard: true })
+    //   .select("videoFile isDashboard _id");
+    // const audioPlayBackVideo = await audioPlaybackModel.find({ default: true });
 
     return {
       statusCategories,
       staticPages,
-      dashbaordVedio,
-      audioPlayBackVideo,
+      // dashbaordVedio,
+      // audioPlayBackVideo,
     };
+  }
+  static async getAudioPlayback() {
+    const audioPlayBackVideo = await audioPlaybackModel.findOne({
+      default: true,
+    });
+    if (!audioPlayBackVideo) {
+      throw new AppError({
+        message: "No audio playback available",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+    return audioPlayBackVideo;
+  }
+  static async getDahsboardVedio() {
+    const dashbaordVedio = await audioPlaybackModel
+      .findOne({ isDashboard: true })
+      .select("videoFile isDashboard _id");
+    if (!dashbaordVedio) {
+      throw new AppError({
+        message: "No data available",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+    return dashbaordVedio;
   }
 }

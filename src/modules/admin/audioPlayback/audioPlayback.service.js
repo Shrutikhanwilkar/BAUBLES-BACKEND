@@ -6,6 +6,9 @@ import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 export default class AudioPlayBackService {
   static async addAudioPlayBack(payload) {
     try {
+       if (payload.default) {
+         await audioPlaybackModel.updateMany({}, { default: false });
+       }
       const newVideo = await audioPlaybackModel.create(payload);
 
       return newVideo;
@@ -23,6 +26,9 @@ export default class AudioPlayBackService {
   }
 
   static async updateAudioPlayBack(id, payload) {
+    if(payload.default){
+      await audioPlaybackModel.updateMany({},{default:false})
+    }
     const updated = await audioPlaybackModel.findByIdAndUpdate(id, payload, {
       new: true,
     });
