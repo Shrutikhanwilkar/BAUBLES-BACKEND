@@ -18,7 +18,14 @@ router.post(
 router.get("/list", AudioPlayBackController.getAllAudioPlayBack);
 
 // UPDATE
-router.patch("/update/:id", AudioPlayBackController.updateAudioPlayBack);
+router.patch(
+  "/update/:id",
+  uploadMultipleToFirebase([
+    { name: "videoFile", maxCount: 1 },
+    { name: "thumbnail", maxCount: 1 },
+  ]),
+  AudioPlayBackController.updateAudioPlayBack
+);
 
 // DELETE
 router.delete("/delete/:id", AudioPlayBackController.deleteAudioPlayBack);

@@ -8,12 +8,13 @@ import AppError from "../../../utils/appError.js";
 import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 export default class CommonService {
   static async getDashboardStats() {
-    const [userCount, childrenCount, giftCount, musicCount] = await Promise.all(
+    const [userCount, childrenCount, giftCount, musicCount,dashbaordVideo] = await Promise.all(
       [
         User.countDocuments({ role: "USER" }),
         Children.countDocuments(),
         Gift.countDocuments(),
         Music.countDocuments(),
+        audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile"),
       ]
     );
 
@@ -22,6 +23,7 @@ export default class CommonService {
       childrenCount,
       giftCount,
       musicCount,
+      dashbaordVideo,
     };
   }
 
@@ -129,6 +131,7 @@ export default class CommonService {
         videoFile: reqBody.videoFile,
         isDashboard: true,
       });
+      data= await audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile");
       return data;
     } catch (err) {
       throw new AppError({
