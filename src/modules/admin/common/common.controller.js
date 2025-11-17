@@ -57,7 +57,7 @@ export default class CommonController {
     return sendSuccess(
       res,
       data,
-      "Uploaded successfully",
+      "Dashboard link uploaded successfully",
       HTTPStatusCode.OK
     );
   });
