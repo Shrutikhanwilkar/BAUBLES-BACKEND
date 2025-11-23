@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
-import User from "../../../models/auth.model.js"
+import User from "../../../models/auth.model.js";
 import Children from "../../../models/children.model.js";
 import AppError from "../../../utils/appError.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
+import messageModel from "../../../models/message.model.js";
+import { hashPassword } from "../../../utils/passwordHelper.js";
 export default class UserService {
   static async listUsers({ page = 1, limit = 10, search }) {
     page = Number(page) || 1;
@@ -234,5 +236,176 @@ export default class UserService {
     ]);
 
     return { user, children };
+  }
+
+  static async getChildDetails(page = 1, limit = 10, childId) {
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Validate childId
+    if (!mongoose.Types.ObjectId.isValid(childId)) {
+      throw new AppError({
+        message: "Invalid child ID",
+        httpStatus: HTTPStatusCode.BAD_REQUEST,
+      });
+    }
+
+    // Match object
+    const match = { childId: new mongoose.Types.ObjectId(childId) };
+
+    // Aggregation pipeline
+    const pipeline = [
+      { $match: match },
+
+      {
+        $lookup: {
+          from: "statuscategories",
+          localField: "statusCategoryId",
+          foreignField: "_id",
+          as: "statusCategory",
+        },
+      },
+      {
+        $unwind: {
+          path: "$statusCategory",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $lookup: {
+          from: "musics",
+          localField: "musicId",
+          foreignField: "_id",
+          as: "music",
+        },
+      },
+      {
+        $unwind: {
+          path: "$music",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    // Run queries in parallel
+    const [data, total] = await Promise.all([
+      messageModel.aggregate(pipeline),
+      messageModel.countDocuments(match),
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      data,
+    };
+  }
+
+  // Add Admin
+  static async addAdmin(payload) {
+    const existingUser = await User.findOne({ email: payload.email });
+    if (existingUser) {
+      throw new AppError({
+        status: false,
+        message: "User with this email already exists",
+        httpStatus: HTTPStatusCode.BAD_REQUEST,
+      });
+    }
+
+    payload.role = "ADMIN"; //force role to ADMIN
+    payload.password = await hashPassword("Admin@12345");
+    payload.isEmailVerified = true;
+
+    const user = await User.create(payload);
+    return user;
+  }
+
+  // List Admins
+  static async listAdmins({ page = 1, limit = 10, search }) {
+    page = Number(page);
+    limit = Number(limit);
+    const skip = (page - 1) * limit;
+
+    const query = { role: "ADMIN" };
+
+    if (search?.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      query.$or = [{ name: regex }, { email: regex }, { mobile: regex }];
+    }
+
+    const [admins, total] = await Promise.all([
+      User.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
+      User.countDocuments(query),
+    ]);
+
+    return {
+      admins,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  // Admin Details
+  static async getAdminDetail(adminId) {
+    const admin = await User.findById(adminId);
+    if (!admin || admin.role !== "ADMIN") {
+      throw new AppError({
+        status: false,
+        message: "Admin not found",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+    return admin;
+  }
+
+  //Edit Admin
+  static async editAdmin(adminId, payload) {
+    const admin = await User.findById(adminId);
+    if (!admin || admin.role !== "ADMIN") {
+      throw new AppError({
+        status: false,
+        message: "Admin not found",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+    if (payload.email) {
+      const exist = await User.findOne({ email: payload.email });
+      if (exist) {
+        throw new AppError({
+          status: false,
+          message: "Email Already Exist",
+          httpStatus: HTTPStatusCode.CONFLICT,
+        });
+      }
+    }
+    Object.assign(admin, payload);
+    await admin.save();
+    return admin;
+  }
+
+  // Delete Admin
+  static async deleteAdmin(adminId) {
+    const admin = await User.findById(adminId);
+    if (!admin || admin.role !== "ADMIN") {
+      throw new AppError({
+        status: false,
+        message: "Admin not found",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+
+    await admin.deleteOne();
+    return admin;
   }
 }

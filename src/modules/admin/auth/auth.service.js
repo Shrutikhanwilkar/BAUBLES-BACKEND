@@ -7,11 +7,10 @@ import { hashPassword } from "../../../utils/passwordHelper.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 
 export default class AuthService {
- 
   static async login(reqBody) {
     const { email, password } = reqBody;
 
-    const user = await User.findOne({ email,role:"ADMIN" });
+    const user = await User.findOne({ email, role: "ADMIN" });
     if (!user) {
       throw new AppError({
         message: "User not found",
@@ -35,6 +34,32 @@ export default class AuthService {
     };
   }
 
+  static async superAdminLogin(reqBody) {
+    const { email, password } = reqBody;
+
+    const user = await User.findOne({ email, role: "SUPERADMIN" });
+    if (!user) {
+      throw new AppError({
+        message: "Super admin not found",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+
+    const isCorrectPassword = await comparePassword(password, user.password);
+    if (!isCorrectPassword) {
+      throw new AppError({
+        message: "Password incorrect",
+        httpStatus: HTTPStatusCode.UNAUTHORIZED,
+      });
+    }
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id, user.email, user.role),
+    };
+  }
 }
 
 

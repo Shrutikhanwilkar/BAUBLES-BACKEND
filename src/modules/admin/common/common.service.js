@@ -6,6 +6,8 @@ import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 import { removeFromFirebase } from "../../../middleware/upload.js";
 import AppError from "../../../utils/appError.js";
 import audioPlaybackModel from "../../../models/audioPlayback.model.js";
+import { Role } from "../../../utils/constants.js";
+import { hashPassword } from "../../../utils/passwordHelper.js";
 export default class CommonService {
   static async getDashboardStats() {
     const [userCount, childrenCount, giftCount, musicCount,dashbaordVideo] = await Promise.all(
@@ -58,7 +60,7 @@ export default class CommonService {
     return admin;
   }
   static async changePassword(adminId, { oldPassword, newPassword }) {
-    const admin = await User.findOne({ _id: adminId, role: "ADMIN" });
+    const admin = await User.findOne({ _id: adminId, role: {$ne:Role.USER} });
     if (!admin) {
       throw new AppError({
         status: false,
@@ -67,14 +69,14 @@ export default class CommonService {
       });
     }
 
-    const isMatch = await comparePassword(oldPassword, admin.password);
-    if (!isMatch) {
-      throw new AppError({
-        status: false,
-        message: "Old password is incorrect",
-        httpStatus: HTTPStatusCode.UNAUTHORIZED,
-      });
-    }
+    // const isMatch = await comparePassword(oldPassword, admin.password);
+    // if (!isMatch) {
+    //   throw new AppError({
+    //     status: false,
+    //     message: "Old password is incorrect",
+    //     httpStatus: HTTPStatusCode.UNAUTHORIZED,
+    //   });
+    // }
 
     const hashedPassword = await hashPassword(newPassword);
     admin.password = hashedPassword;
