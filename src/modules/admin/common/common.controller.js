@@ -13,7 +13,6 @@ export default class CommonController {
     );
   });
   static getProfile = asyncHandler(async (req, res) => {
-    console.log(req.user);
     const data = await CommonService.getProfile(req.user.id);
     return sendSuccess(
       res,

@@ -30,7 +30,7 @@ export default class CommonService {
   }
 
   static async getProfile(adminId) {
-    const admin = await User.findOne({ _id: adminId, role: "ADMIN" }).select(
+    const admin = await User.findOne({ _id: adminId, role: {$ne:Role.USER} }).select(
       "-password -otp -otpExpiredAt"
     );
     if (!admin) {
@@ -44,7 +44,7 @@ export default class CommonService {
   }
   static async updateProfile(adminId, reqBody) {
     const admin = await User.findOneAndUpdate(
-      { _id: adminId, role: "ADMIN" },
+      { _id: adminId, role: { $ne: Role.USER } },
       reqBody,
       { new: true, runValidators: true, select: "-password -otp -otpExpiredAt" }
     );
