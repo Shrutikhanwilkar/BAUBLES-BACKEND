@@ -7,6 +7,10 @@ import { loginSchema,} from "./auth.validation.js";
 const authRouter = Router();
 
 authRouter.post("/login", validate(loginSchema), AuthController.login);
-
+authRouter.post(
+  "/super-admin/login",
+  validate(loginSchema),
+  AuthController.superAdminLogin
+);
 
 export default authRouter;

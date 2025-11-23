@@ -1,12 +1,14 @@
 import Joi from "joi";
 
 export const changePasswordSchema = Joi.object({
-  oldPassword: Joi.string().required().messages({
+  oldPassword: Joi.string().optional().allow(null, "").messages({
     "string.empty": "Old password is required",
   }),
 
   newPassword: Joi.string()
-    .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{6,}$"))
+    .pattern(
+      new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{6,}$")
+    )
     .required()
     .messages({
       "string.pattern.base":
@@ -14,13 +16,11 @@ export const changePasswordSchema = Joi.object({
       "string.empty": "New password is required",
     }),
 
-  confirmPassword: Joi.any()
-    .valid(Joi.ref("newPassword"))
-    .required()
-    .messages({
-      "any.only": "Confirm password must match new password",
-      "any.required": "Confirm password is required",
-    }),
+  confirmPassword: Joi.any().valid(Joi.ref("newPassword")).required().messages({
+    "any.only": "Confirm password must match new password",
+    "any.required": "Confirm password is required",
+  }),
+  user: Joi.object(),
 });
 export const updateProfileSchema = Joi.object({
   name: Joi.string().min(2).max(50).trim().messages({

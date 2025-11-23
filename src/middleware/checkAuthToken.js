@@ -28,7 +28,7 @@ const authenticateToken = async (req, res, next) => {
       )
     }
     // Attach user info to request
-    let userData = await User.findById(user.id).select("_id email status name  isEmailVerified");
+    let userData = await User.findById(user.id).select("_id email role status name  isEmailVerified");
     if (!userData) {
       return await sendError(
         res,
