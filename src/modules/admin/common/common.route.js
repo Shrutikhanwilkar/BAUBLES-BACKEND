@@ -11,14 +11,16 @@ import { uploadSingleToFirebase } from "../../../middleware/upload.js";
 const router = Router();
 router.use(authenticateToken);
 
-router.get("/profile", CommonController.getProfile);
+router.get("/profile", authenticateToken, CommonController.getProfile);
 router.put(
   "/change-password",
+  authenticateToken,
   validate(changePasswordSchema),
   CommonController.changePassword
 );
 router.put(
   "/update-profile",
+  authenticateToken,
   uploadSingleToFirebase("avatar"),
   validate(updateProfileSchema),
   CommonController.updateProfile
