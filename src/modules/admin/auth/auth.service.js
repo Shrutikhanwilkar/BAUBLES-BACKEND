@@ -5,15 +5,16 @@ import {comparePassword } from "../../../utils/passwordHelper.js";
 import AppError from "../../../utils/appError.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
+import { Role } from "../../../utils/constants.js";
 
 export default class AuthService {
   static async login(reqBody) {
     const { email, password } = reqBody;
 
-    const user = await User.findOne({ email, role: "ADMIN" });
+    const user = await User.findOne({ email, role: {$ne:Role.USER} });
     if (!user) {
       throw new AppError({
-        message: "User not found",
+        message: "Email not found",
         httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
