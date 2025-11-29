@@ -40,8 +40,9 @@ export class AuthService {
     };
   }
 
-  async login(reqBody) {
+  async login(reqBody, deviceToken, deviceType) {
     const { email, password } = reqBody;
+
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -69,10 +70,20 @@ export class AuthService {
       });
     }
 
+    // ⭐ Save Device Token & Device Type
+    if (deviceToken) {
+      await User.updateOne(
+        { _id: user._id },
+        { deviceToken: deviceToken, deviceType: deviceType }
+      );
+    }
+
     return {
       _id: user._id,
       name: user.name,
       email: user.email,
+      deviceToken,
+      deviceType,
       token: generateToken(user._id, user.email, user.role),
     };
   }
@@ -131,8 +142,8 @@ export class AuthService {
     }
 
     const otpData = generateOTP();
-console.log(otpData)
-    let data=await User.findByIdAndUpdate(user._id, {
+    console.log(otpData);
+    let data = await User.findByIdAndUpdate(user._id, {
       otp: otpData.otp,
       otpExpiredAt: otpData.expiresAt,
     });
@@ -145,7 +156,7 @@ console.log(otpData)
       email: user.email,
     };
   }
-  
+
   async changePassword(reqBody) {
     const { newPassword, user } = reqBody;
 

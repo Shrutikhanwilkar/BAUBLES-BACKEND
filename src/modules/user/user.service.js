@@ -6,6 +6,7 @@ import StatusCategory from "../../models/statusCategory.model.js";
 import StaticPage from "../../models/staticPage.model.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 import audioPlaybackModel from "../../models/audioPlayback.model.js";
+import notificationModel from "../../models/notification.model.js";
 
 export default class UserService {
   static async getProfile(userId) {
@@ -121,5 +122,36 @@ export default class UserService {
       });
     }
     return dashbaordVedio;
+  }
+  static async notificationList(page = 1, limit = 10,userId) {
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      notificationModel
+        .find({ user: userId })
+        .select("_id body title data createdAt data")
+        .sort({ createdAt: -1 }) // Latest first
+        .skip(skip)
+        .limit(limit),
+
+      notificationModel.countDocuments({ user: userId }),
+    ]);
+
+    if (!data || data.length === 0) {
+      throw new AppError({
+        message: "No data available",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+
+    return {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      data,
+    };
   }
 }

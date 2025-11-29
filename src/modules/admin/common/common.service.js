@@ -8,17 +8,18 @@ import AppError from "../../../utils/appError.js";
 import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 import { Role } from "../../../utils/constants.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
+import appVersionModel from "../../../models/appVersion.model.js";
+import { sendBulkPushNotification } from "../../../utils/fcmNotification.js";
 export default class CommonService {
   static async getDashboardStats() {
-    const [userCount, childrenCount, giftCount, musicCount,dashbaordVideo] = await Promise.all(
-      [
+    const [userCount, childrenCount, giftCount, musicCount, dashbaordVideo] =
+      await Promise.all([
         User.countDocuments({ role: "USER" }),
         Children.countDocuments(),
         Gift.countDocuments(),
         Music.countDocuments(),
         audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile"),
-      ]
-    );
+      ]);
 
     return {
       userCount,
@@ -30,9 +31,10 @@ export default class CommonService {
   }
 
   static async getProfile(adminId) {
-    const admin = await User.findOne({ _id: adminId, role: {$ne:Role.USER} }).select(
-      "-password -otp -otpExpiredAt"
-    );
+    const admin = await User.findOne({
+      _id: adminId,
+      role: { $ne: Role.USER },
+    }).select("-password -otp -otpExpiredAt");
     if (!admin) {
       throw new AppError({
         status: false,
@@ -60,7 +62,10 @@ export default class CommonService {
     return admin;
   }
   static async changePassword(adminId, { oldPassword, newPassword }) {
-    const admin = await User.findOne({ _id: adminId, role: {$ne:Role.USER} });
+    const admin = await User.findOne({
+      _id: adminId,
+      role: { $ne: Role.USER },
+    });
     if (!admin) {
       throw new AppError({
         status: false,
@@ -133,7 +138,9 @@ export default class CommonService {
         videoFile: reqBody.videoFile,
         isDashboard: true,
       });
-      data= await audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile");
+      data = await audioPlaybackModel
+        .findOne({ isDashboard: true })
+        .select("videoFile");
       return data;
     } catch (err) {
       throw new AppError({
@@ -142,5 +149,26 @@ export default class CommonService {
         details: err.message,
       });
     }
+  }
+  static async appVerisonUpdate(reqBody) {
+    const { iosVersion, androidVersion, forceUpdate } = reqBody;
+
+    const updatedVersion = await appVersionModel.findOneAndUpdate(
+      {},
+      { iosVersion, androidVersion, forceUpdate },
+      { new: true, upsert: true }
+    );
+
+    // 🔔 Send Notification to All Users
+    await sendBulkPushNotification(
+      "App Update Available!",
+      `App updated. Tap to see what is new`,
+      { iosVersion, androidVersion }
+    );
+  }
+
+  // Get latest version (Admin View)
+  static async appVersion() {
+    return await appVersionModel.findOne();
   }
 }

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Role } from "../utils/constants.js"
+import { Role } from "../utils/constants.js";
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: false },
@@ -13,7 +13,9 @@ const userSchema = new mongoose.Schema(
     role: { type: String, required: true, default: Role.USER },
     isEmailVerified: { type: Boolean, default: false },
     otp: { type: String },
-    otpExpiredAt: { type: Number }
+    otpExpiredAt: { type: Number },
+    deviceToken: { type: String, default: null },
+    deviceType: { type: String, default: null },
   },
   { timestamps: true }
 );

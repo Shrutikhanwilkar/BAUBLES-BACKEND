@@ -60,4 +60,13 @@ export default class CommonController {
       HTTPStatusCode.OK
     );
   });
+  static appVerisonUpdate = asyncHandler(async (req, res) => {
+    const data = await CommonService.appVerisonUpdate(req.body);
+    return sendSuccess(res, data, "Version updated successfully");
+  });
+
+  static appVersion = asyncHandler(async (req, res) => {
+    const data = await CommonService.appVersion();
+    return sendSuccess(res, data, "Version fetched successfully");
+  });
 }
