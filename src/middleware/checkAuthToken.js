@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/auth.model.js"
+import User from "../models/auth.model.js";
 import { sendError } from "../utils/responseHelper.js";
 import HTTPStatusCode from "../utils/httpStatusCode.js";
 // import * as dotenv from 'dotenv';
@@ -8,14 +8,16 @@ import HTTPStatusCode from "../utils/httpStatusCode.js";
 
 const authenticateToken = async (req, res, next) => {
   // Get token from Authorization header
-  const authHeader = req.headers['x-authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Expected: "Bearer <token>"
+  const authHeader = req.headers["x-authorization"];
+   const deviceToken = req.headers["device-token"];
+   const deviceType = req.headers["device-type"];
+  const token = authHeader && authHeader.split(" ")[1]; // Expected: "Bearer <token>"
   if (!token) {
     return await sendError(
       res,
-      'Access token required',
+      "Access token required",
       HTTPStatusCode.UNAUTHORIZED
-    )
+    );
   }
 
   // Verify token
@@ -23,18 +25,22 @@ const authenticateToken = async (req, res, next) => {
     if (err) {
       return await sendError(
         res,
-        'Invalid or expired token',
+        "Invalid or expired token",
         HTTPStatusCode.UNAUTHORIZED
-      )
+      );
     }
     // Attach user info to request
-    let userData = await User.findById(user.id).select("_id email role status name  isEmailVerified");
+    let userData = await User.findOneAndUpdate(
+      { _id: user.id },
+      { $set: { deviceToken, deviceType } },
+      {
+        new: true,
+        select: "_id email role status name isEmailVerified",
+      }
+    );
+
     if (!userData) {
-      return await sendError(
-        res,
-        'User not found',
-        HTTPStatusCode.NOT_FOUND
-      )
+      return await sendError(res, "User not found", HTTPStatusCode.NOT_FOUND);
     }
     // if (!userData.isOtpVerified) {
     //   return await errorResponse(

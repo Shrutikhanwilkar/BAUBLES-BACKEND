@@ -11,7 +11,9 @@ export class AuthController {
   });
 
   login = asyncHandler(async (req, res) => {
-    const data = await authService.login(req.body);
+     const deviceToken = req.headers["device-token"];
+     const deviceType = req.headers["device-type"];
+    const data = await authService.login(req.body, deviceToken, deviceType);
     sendSuccess(res, data, "Login Successful", HTTPStatusCode.OK);
   });
 

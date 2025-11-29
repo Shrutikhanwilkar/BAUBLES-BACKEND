@@ -63,4 +63,15 @@ export default class UserController {
       HTTPStatusCode.OK
     );
   });
+  static notificationList = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+     const { page, limit } = req.query;
+    const data = await UserService.notificationList(page, limit, userId);
+    return sendSuccess(
+      res,
+      data,
+      "Notifcations fetched successfully",
+      HTTPStatusCode.OK
+    );
+  });
 }

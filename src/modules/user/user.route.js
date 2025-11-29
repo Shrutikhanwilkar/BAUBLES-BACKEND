@@ -30,4 +30,10 @@ router.get(
   authenticateToken,
   UserController.getAudioPlayback
 );
+
+router.get(
+  "/notification-list",
+  authenticateToken,
+  UserController.notificationList
+);
 export default router;

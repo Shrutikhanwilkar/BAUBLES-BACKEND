@@ -42,4 +42,7 @@ router.post(
   CommonController.addDashboardVedio
 );
 
+router.post("/app-version-update", authenticateToken, CommonController.appVerisonUpdate); // always upserts one
+router.get("/app-version",  authenticateToken,CommonController.appVersion);
+
 export default router;

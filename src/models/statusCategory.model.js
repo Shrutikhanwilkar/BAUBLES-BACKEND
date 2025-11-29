@@ -15,6 +15,12 @@ const statusCategorySchema = new Schema(
             required: true,
             trim: true,
         },
+        colourName:{
+            type: String,
+            // required: true,
+            trim: true,
+            default:""
+        },
         description: {
             type: String,
             trim: true,
