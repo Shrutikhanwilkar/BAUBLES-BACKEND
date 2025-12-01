@@ -2,8 +2,7 @@ import User from "../../models/auth.model.js";
 import { generateToken } from "../../utils/jwtHelper.js";
 import { hashPassword, comparePassword } from "../../utils/passwordHelper.js";
 import { generateOTP } from "../../utils/otpHelper.js";
-import { sendRegistrationOtp } from "../../utils/mailer.js";
-import httpStatus from "http-status";
+import { sendRegistrationOtp, sendResendOtp } from "../../utils/mailer.js";
 import AppError from "../../utils/appError.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 export class AuthService {
@@ -30,9 +29,8 @@ export class AuthService {
       otp: "1234",
       otpExpiredAt: otpData.expiresAt,
     });
-
-    // await sendRegistrationOtp(user, otpData);
-
+    user.email='diksha@yopmail.com'
+    await sendRegistrationOtp(user, otpData);
     return {
       _id: user._id,
       name: user.name,
@@ -141,14 +139,14 @@ export class AuthService {
       });
     }
 
-    const otpData = generateOTP();
-    console.log(otpData);
+    const otpData = await generateOTP();
+   
     let data = await User.findByIdAndUpdate(user._id, {
       otp: otpData.otp,
       otpExpiredAt: otpData.expiresAt,
     });
 
-    // await sendRegistrationOtp(user, otpData);
+    await sendResendOtp(user, otpData);
 
     return {
       _id: user._id,
