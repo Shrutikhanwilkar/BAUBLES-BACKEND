@@ -36,7 +36,7 @@ export const sendSES = async (to, subject, html) => {
 };
 
 // ----- Registration OTP -----
-export const sendRegistrationOtp = (userData, otpData) => {
+export const sendRegistrationOtp =async(userData, otpData) => {
   try {
     const templatePath = path.join(templateDir, "signupOtp.pug");
 
@@ -75,3 +75,48 @@ export const sendContactSolution = (contact, solutionMessage) => {
 
   return true;
 };
+
+export const sendResendOtp = async (userData, otpData) => {
+  try {
+    const templatePath = path.join(templateDir, "resendOtp.pug"); // You can reuse signupOtp.pug too
+
+    const html = pug.renderFile(templatePath, {
+      name: userData.name,
+      email: "rathoddiksha1402@gmail.com",
+      otp: otpData.otp,
+    });
+
+    const subject = "Email Verification OTP - Baubles";
+
+    await sendSES("rathoddiksha1402@gmail.com", subject, html);
+  } catch (err) {
+    console.error("Failed to render/send OTP email:", err.message);
+  }
+
+  return true;
+};
+
+export const sendForgotPasswordOtp = async (userData, otpData) => {
+  try {
+    const templatePath = path.join(templateDir, "forgotPasswordOtp.pug");
+
+    const html = pug.renderFile(templatePath, {
+      name: userData.name,
+      email: userData.email,
+      otp: otpData.otp,
+      expiresIn: otpData.expiresIn || 10, // optional expiry
+    });
+
+    const subject = "Forgot Password OTP - Baubles";
+
+    await sendSES(userData.email, subject, html);
+  } catch (err) {
+    console.error(
+      "Failed to render/send Forgot Password OTP email:",
+      err.message
+    );
+  }
+
+  return true;
+};
+

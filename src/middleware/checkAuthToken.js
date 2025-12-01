@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/auth.model.js";
 import { sendError } from "../utils/responseHelper.js";
 import HTTPStatusCode from "../utils/httpStatusCode.js";
+import appVersionModel from "../models/appVersion.model.js";
 // import * as dotenv from 'dotenv';
 
 // dotenv.config();
@@ -9,8 +10,21 @@ import HTTPStatusCode from "../utils/httpStatusCode.js";
 const authenticateToken = async (req, res, next) => {
   // Get token from Authorization header
   const authHeader = req.headers["x-authorization"];
-   const deviceToken = req.headers["device-token"];
-   const deviceType = req.headers["device-type"];
+  const deviceToken = req.headers["device-token"];
+  const deviceType = req.headers["device-type"];
+  const version = req.headers["version"];
+  let appversion = await appVersionModel.findOne();
+  const requiredVersion =
+    deviceType === "ios"
+      ? appversion.iosVersion
+      : deviceType === "android"
+      ? appversion.androidVersion
+      : null;
+
+  if (requiredVersion && Number(requiredVersion) > Number(version)) {
+    return await sendError(res, "Version Updated", HTTPStatusCode.UNAUTHORIZED);
+  }
+
   const token = authHeader && authHeader.split(" ")[1]; // Expected: "Bearer <token>"
   if (!token) {
     return await sendError(
