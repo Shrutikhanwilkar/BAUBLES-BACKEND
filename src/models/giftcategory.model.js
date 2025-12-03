@@ -16,13 +16,13 @@ const giftCategorySchema = new mongoose.Schema(
 
     packageType: {
       type: String,
-      enum: [
-        "Exclusive First-Open",
-        "Holiday Peak",
-        "Targeted Age",
-        "Basic",
-        "Short-Term Burst",
-      ],
+      // enum: [
+      //   "Exclusive First-Open",
+      //   "Holiday Peak",
+      //   "Targeted Age",
+      //   "Basic",
+      //   "Short-Term Burst",
+      // ],
       required: true,
     },
 

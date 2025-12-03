@@ -11,22 +11,94 @@ import { hashPassword } from "../../../utils/passwordHelper.js";
 import appVersionModel from "../../../models/appVersion.model.js";
 import { sendBulkPushNotification } from "../../../utils/fcmNotification.js";
 export default class CommonService {
+  // static async getDashboardStats() {
+  //   const [
+  //     userCount,
+  //     childrenCount,
+  //     giftCount,
+  //     musicCount,
+  //     dashbaordVideo,
+  //     maleChildrenCount,
+  //     femaleChildrenCount,
+  //   ] = await Promise.all([
+  //     User.countDocuments({ role: "USER" }),
+  //     Children.countDocuments(),
+  //     Gift.countDocuments(),
+  //     Music.countDocuments(),
+  //     audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile"),
+  //     Children.countDocuments({ gender: "male" }),
+  //     Children.countDocuments({ gender: "female" }),
+  //   ]);
+
+  //   return {
+  //     userCount,
+  //     childrenCount,
+  //     giftCount,
+  //     musicCount,
+  //     dashbaordVideo,
+  //     maleChildrenCount,
+  //     femaleChildrenCount,
+  //   };
+  // }
   static async getDashboardStats() {
-    const [userCount, childrenCount, giftCount, musicCount, dashbaordVideo] =
-      await Promise.all([
-        User.countDocuments({ role: "USER" }),
-        Children.countDocuments(),
-        Gift.countDocuments(),
-        Music.countDocuments(),
-        audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile"),
-      ]);
+    const [
+      userCount,
+      childrenCount,
+      maleChildren,
+      femaleChildren,
+      giftCount,
+      musicCount,
+      dashboardVideo,
+      stateWiseCounts,
+    ] = await Promise.all([
+      User.countDocuments({ role: "USER" }),
+      Children.countDocuments(),
+      Children.countDocuments({ gender: "male" }),
+      Children.countDocuments({ gender: "female" }),
+      Gift.countDocuments(),
+      Music.countDocuments(),
+      audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile"),
+
+      // Aggregate count per Australian state
+      Children.aggregate([
+        {
+          $match: {
+            state: {
+              $in: [
+                "New South Wales",
+                "Victoria",
+                "Queensland",
+                "Western Australia",
+                "South Australia",
+                "Tasmania",
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$state",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    // Convert array → object:  { "Victoria": 12, "Queensland": 5 }
+    const stateCounts= {};
+    stateWiseCounts?.forEach((s) => {
+      stateCounts[s._id] = s.count;
+    });
 
     return {
       userCount,
       childrenCount,
+      maleChildren,
+      femaleChildren,
       giftCount,
       musicCount,
-      dashbaordVideo,
+      dashboardVideo,
+      stateCounts,
     };
   }
 
