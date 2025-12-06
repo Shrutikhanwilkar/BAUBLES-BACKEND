@@ -159,13 +159,11 @@ export const removeFromFirebase = async (fileUrls) => {
 
             if (exists) {
                 await file.delete();
-                console.log("🗑️ Deleted from Firebase:", filePath);
                 deleted++;
             } else {
                 console.log("ℹ️ File doesn't exist:", filePath);
             }
         } catch (err) {
-            console.error("⚠️ Failed to delete file:", url, err.message);
             failed++;
         }
     });

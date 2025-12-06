@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
     otpExpiredAt: { type: Number },
     deviceToken: { type: String, default: null },
     deviceType: { type: String, default: null },
+    isFirstAppOpen: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

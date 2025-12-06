@@ -46,13 +46,11 @@ class MessageService {
       const statusCategory = await StatusCategory.findById(
         statusCategoryId
       ).lean();
-       console.log(statusCategory);
       // Get notification message based on color
       const notificationBody = getStatusNotificationMessage(
         child.firstName,
         statusCategory.colourName
       );
-      console.log(notificationBody,"---body")
       await sendPushNotification(
         userId,
         parentId.deviceToken,
@@ -61,7 +59,7 @@ class MessageService {
         {
           childId: childId.toString(),
           status: statusCategory.color,
-          type: "BEHAVIOUR_STATUS",
+          type: "CHILDREN_DASHBOARD",
         }
       );
     }

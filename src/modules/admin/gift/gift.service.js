@@ -47,7 +47,6 @@ export default class GiftService {
     try {
       if (!gift) {
         if (newImage) {
-          console.log(1);
           await removeFromFirebase(newImage);
         }
         throw new AppError({
@@ -61,14 +60,12 @@ export default class GiftService {
         runValidators: true,
       });
       if (newImage && oldImage && newImage !== oldImage) {
-        console.log(2);
         await removeFromFirebase(oldImage);
       }
 
       return updatedGift;
     } catch (error) {
       if (newImage && (!gift || newImage !== oldImage)) {
-        console.log(3);
         await removeFromFirebase(newImage);
       }
       throw error;
