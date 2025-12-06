@@ -3,7 +3,6 @@ import HTTPStatusCode from "../utils/httpStatusCode.js";
 
 export const validate = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, { abortEarly: false }); // `abortEarly: false` returns all validation errors
-  console.log(req.body)
   if (error) {
     const errorDetails = error.details.map((detail) => {
       return {

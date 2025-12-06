@@ -8,7 +8,6 @@ class MessageController {
     static sendMessage = asyncHandler(async (req, res) => {
         const { childId, statusCategoryId } = req.body;
         const userId = req.user?.id
-        console.log(userId)
         const data = await MessageService.sendMessage(userId, childId, statusCategoryId);
         return sendSuccess(res, data, "Message sent successfully", HTTPStatusCode.CREATED);
     });

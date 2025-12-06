@@ -73,7 +73,6 @@ export default class UserService {
       };
     } catch (err) {
       await removeFromFirebase(avatarUrl);
-      console.log(err);
       throw new AppError({
         message: "Failed to update avatar",
         httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,

@@ -56,26 +56,7 @@ const authenticateToken = async (req, res, next) => {
     if (!userData) {
       return await sendError(res, "User not found", HTTPStatusCode.NOT_FOUND);
     }
-    // if (!userData.isOtpVerified) {
-    //   return await errorResponse(
-    //     res,
-    //     'Please verify your otp',
-    //     HTTP_STATUS.UNAUTHORIZED
-    //   )
-    // }
-    // if (userData.status == status.In_ACTIVE) {
-    //   return await errorResponse(
-    //     res,
-    //     'User Inactive',
-    //     HTTP_STATUS.BAD_REQUEST
-    //   )
-    // }
-    // if (userData.status == status.DELETED) {
-    //   return await errorResponse(
-    //     res,
-    //     'User Deleted',
-    //     HTTP_STATUS.BAD_REQUEST)
-    // }
+
     if (!req.body) req.body = {};
     req.body.user = user;
     req.user = user;

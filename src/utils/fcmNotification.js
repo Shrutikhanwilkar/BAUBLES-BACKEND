@@ -15,12 +15,12 @@ export const sendPushNotification = async (
       title,
       body,
     },
-    data, // optional key-value data
+    data: {
+      ...data,
+    },
   };
   try {
     const response = await admin.messaging().send(message);
-    console.log("Push Notification Sent:", response);
-    // Save to DB
     await notificationModel.create({
       user: userId,
       title,
@@ -31,7 +31,6 @@ export const sendPushNotification = async (
     });
     return response;
   } catch (error) {
-    console.error("Error sending push:", error);
     await notificationModel.create({
       user: userId,
       title,
@@ -52,7 +51,6 @@ export const sendBulkPushNotification = async (title, body, data = {}) => {
     });
 
     if (!users.length) {
-      console.log("No users with device tokens found.");
       return;
     }
     const sendPromises = users.map((user) =>
@@ -60,11 +58,8 @@ export const sendBulkPushNotification = async (title, body, data = {}) => {
     );
 
     const results = await Promise.allSettled(sendPromises);
-    console.log("Bulk Notification Results:", results);
-
     return results;
   } catch (error) {
-    console.error("Error in bulk notification:", error);
     throw error;
   }
 };

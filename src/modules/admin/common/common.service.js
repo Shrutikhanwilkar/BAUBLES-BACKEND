@@ -9,7 +9,8 @@ import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 import { Role } from "../../../utils/constants.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import appVersionModel from "../../../models/appVersion.model.js";
-import { sendBulkPushNotification } from "../../../utils/fcmNotification.js";
+import { sendBulkPushNotification ,sendPushNotification} from "../../../utils/fcmNotification.js";
+import authModel from "../../../models/auth.model.js";
 export default class CommonService {
   // static async getDashboardStats() {
   //   const [
@@ -85,7 +86,7 @@ export default class CommonService {
     ]);
 
     // Convert array → object:  { "Victoria": 12, "Queensland": 5 }
-    const stateCounts= {};
+    const stateCounts = {};
     stateWiseCounts?.forEach((s) => {
       stateCounts[s._id] = s.count;
     });
@@ -195,7 +196,6 @@ export default class CommonService {
       };
     } catch (err) {
       await removeFromFirebase(avatarUrl);
-      console.log(err);
       throw new AppError({
         message: "Failed to update avatar",
         httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,
@@ -235,8 +235,47 @@ export default class CommonService {
     await sendBulkPushNotification(
       "App Update Available!",
       `App updated. Tap to see what is new`,
-      { iosVersion, androidVersion }
+      { iosVersion, androidVersion, type: "SETTING" }
     );
+  }
+  static async sendBroadcastToAll() {
+    
+    const users = await authModel.find({
+      deviceToken: { $exists: true, $ne: null },
+      role: Role.USER,
+    });
+
+    if (!users.length) {
+      return { success: false, message: "No users found with device tokens" };
+    }
+
+   
+    const sendPromises = users.map((user) => {
+      const parentName = user.name ? user.name : "Parent";
+
+      const title = "New broadcast message received";
+      const body = `${parentName} - you have received a new message from the NoN Bauble team. Tap to view.`;
+
+      const data = {
+        type: "DASHBOARD"
+      };
+
+      return sendPushNotification(
+        user._id,
+        user.deviceToken,
+        title,
+        body,
+        data
+      );
+    });
+
+    await Promise.allSettled(sendPromises);
+
+    return {
+      success: true,
+      message: "Broadcast message sent to all users",
+      users: users.length
+    };
   }
 
   // Get latest version (Admin View)

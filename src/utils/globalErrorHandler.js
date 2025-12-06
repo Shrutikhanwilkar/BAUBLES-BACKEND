@@ -56,10 +56,6 @@ export const globalErrorHandler = async (error, req, res, next) => {
           message: error.message,
         });
     }
-
-    // ✅ Generic Fallback
-    console.error("Unhandled error:", error);
-
     return res.status(500).json({
         status: false,
         success: false,

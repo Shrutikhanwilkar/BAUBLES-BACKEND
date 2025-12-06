@@ -45,8 +45,7 @@ export default class ChildrenService {
           title,
           body,
           {
-            type: "SETUP_COMPLETE",
-            destination: "CHILDREN_DASHBOARD",
+            type: "CHILDREN_DASHBOARD"
           }
         );
       }

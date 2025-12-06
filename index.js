@@ -2,8 +2,10 @@ import express from "express";
 import httpStatus from "http-status";
 import { connectDB } from "./src/config/dbConnection.js";
 import { globalErrorHandler } from "./src/utils/globalErrorHandler.js";
+import { resetFirstAppOpenForAllUsers } from "./src/utils/jobs/runDailyMidnightTask.js";
 import router from "./src/routes/index.js";
-import cors from "cors"
+import cron from "node-cron";
+import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -31,7 +33,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Test route
 app.get("/home", (req, res) => {
   res.send("Server ready.....!");
@@ -40,6 +41,16 @@ app.get("/home", (req, res) => {
 // Main routes
 app.use("/api", router);
 
+cron.schedule(
+  "0 0 * * *", // Every day at 00:00 midnight
+  async () => {
+    console.log("⏰ Running Midnight Cron:", new Date());
+    await resetFirstAppOpenForAllUsers();
+  },
+  {
+    timezone: "Australia/Sydney", // IMPORTANT
+  }
+);
 // Handle unknown routes
 app.use((req, res) => {
   res.status(httpStatus.NOT_FOUND).json({
