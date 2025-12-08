@@ -50,4 +50,9 @@ router.post(
   authenticateToken,
   CommonController.sendBroadcastToAll
 );
+router.get(
+  "/broadcast/history",
+  authenticateToken,
+  CommonController.broadcastHistory
+);
 export default router;
