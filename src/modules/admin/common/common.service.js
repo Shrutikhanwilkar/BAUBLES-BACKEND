@@ -9,8 +9,12 @@ import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 import { Role } from "../../../utils/constants.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import appVersionModel from "../../../models/appVersion.model.js";
-import { sendBulkPushNotification ,sendPushNotification} from "../../../utils/fcmNotification.js";
+import {
+  sendBulkPushNotification,
+  sendPushNotification,
+} from "../../../utils/fcmNotification.js";
 import authModel from "../../../models/auth.model.js";
+import broadcastModel from "../../../models/broadcast.model.js";
 export default class CommonService {
   // static async getDashboardStats() {
   //   const [
@@ -239,7 +243,6 @@ export default class CommonService {
     );
   }
   static async sendBroadcastToAll() {
-    
     const users = await authModel.find({
       deviceToken: { $exists: true, $ne: null },
       role: Role.USER,
@@ -249,7 +252,6 @@ export default class CommonService {
       return { success: false, message: "No users found with device tokens" };
     }
 
-   
     const sendPromises = users.map((user) => {
       const parentName = user.name ? user.name : "Parent";
 
@@ -257,7 +259,7 @@ export default class CommonService {
       const body = `${parentName} - you have received a new message from the NoN Bauble team. Tap to view.`;
 
       const data = {
-        type: "DASHBOARD"
+        type: "DASHBOARD",
       };
 
       return sendPushNotification(
@@ -271,11 +273,26 @@ export default class CommonService {
 
     await Promise.allSettled(sendPromises);
 
+    await broadcastModel.create({ activeUserCount: users.length });
     return {
       success: true,
       message: "Broadcast message sent to all users",
-      users: users.length
+      users: users.length,
     };
+  }
+  static async broadcastHistory() {
+    try {
+      // Fetch all broadcast messages sorted by latest first
+      const history = await broadcastModel.find().sort({ createdAt: -1 });
+
+      return {
+        total: history.length,
+        data: history,
+      };
+    } catch (error) {
+      console.error("Error fetching broadcast history:", error);
+      throw new CustomError("Unable to fetch broadcast history", 500);
+    }
   }
 
   // Get latest version (Admin View)
