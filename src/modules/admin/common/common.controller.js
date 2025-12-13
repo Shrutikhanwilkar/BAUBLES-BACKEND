@@ -71,7 +71,7 @@ export default class CommonController {
   });
 
   static sendBroadcastToAll = asyncHandler(async (req, res) => {
-    const data = await CommonService.sendBroadcastToAll();
+    const data = await CommonService.sendBroadcastToAll(req.body);
     return sendSuccess(res, data, "Broadcast sent successfully");
   });
 

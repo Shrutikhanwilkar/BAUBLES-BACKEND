@@ -25,11 +25,10 @@ export class AuthService {
       name,
       email,
       password: hashedPassword,
-      // otp: otpData.otp,
-      otp: "1234",
+      otp: otpData.otp,
+      // otp: "1234",
       otpExpiredAt: otpData.expiresAt,
     });
-    user.email='diksha@yopmail.com'
     await sendRegistrationOtp(user, otpData);
     return {
       _id: user._id,
@@ -64,11 +63,20 @@ export class AuthService {
       throw new AppError({
         status: false,
         message: "Your account is not verified. Please verify your email.",
-        httpStatus: HTTPStatusCode.FORBIDDEN,
+        httpStatus: HTTPStatusCode.UNAUTHORIZED,
       });
     }
 
-    // ⭐ Save Device Token & Device Type
+    if (user.status == "inactive") {
+      throw new AppError({
+      
+        message:
+          "Your account is deactived by admin, Please contact to admin for more information.",
+        httpStatus: HTTPStatusCode.UNAUTHORIZED,
+      });
+    }
+
+    //  Save Device Token & Device Type
     if (deviceToken) {
       await User.updateOne(
         { _id: user._id },
@@ -140,8 +148,8 @@ export class AuthService {
     }
 
     const otpData = await generateOTP();
-   
-    let data = await User.findByIdAndUpdate(user._id, {
+
+    await User.findByIdAndUpdate(user._id, {
       otp: otpData.otp,
       otpExpiredAt: otpData.expiresAt,
     });

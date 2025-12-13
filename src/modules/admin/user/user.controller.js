@@ -65,7 +65,7 @@ export default class UserController {
 
   // Edit Admin
   static editAdmin = asyncHandler(async (req, res) => {
-     req.body.avatar = req.body?.avatar;
+    req.body.avatar = req.body?.avatar;
     const data = await UserService.editAdmin(req.params.id, req.body);
     return sendSuccess(res, data, "Admin updated successfully");
   });
@@ -74,5 +74,15 @@ export default class UserController {
   static deleteAdmin = asyncHandler(async (req, res) => {
     const data = await UserService.deleteAdmin(req.params.id);
     return sendSuccess(res, data, "Admin deleted successfully");
+  });
+
+  static updateUserStatus = asyncHandler(async (req, res) => {
+    const data = await UserService.updateUserStatus(req.params.id);
+    return sendSuccess(
+      res,
+      data,
+      "User Status Updated successfully",
+      HTTPStatusCode.OK
+    );
   });
 }

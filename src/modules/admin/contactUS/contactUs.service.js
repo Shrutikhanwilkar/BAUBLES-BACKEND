@@ -99,12 +99,10 @@ export default class ContactUsService {
       await contact.save();
 
       // ---- Send Email using AWS SES ----
-    //   sendContactSolution(contact, reqBody.solution);
+      sendContactSolution(contact, reqBody.solution);
 
       return contact;
     }
-
-    // If this point is reached, nothing changes
     return contact;
   }
 }

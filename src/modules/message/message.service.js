@@ -21,7 +21,10 @@ class MessageService {
     }
 
     // Pick a random music for this category
-    const musics = await Music.find({ statusCategory: statusCategoryId });
+    const musics = await Music.find({
+      statusCategory: statusCategoryId,
+      isFree: true,
+    });
     if (!musics.length) {
       throw new AppError({
         status: false,
@@ -157,6 +160,7 @@ class MessageService {
           description: 1,
           musicFile: 1,
           createdAt: 1,
+          isFree: 1,
           "statusCategory._id": 1,
           "statusCategory.name": 1,
           "statusCategory.color": 1,

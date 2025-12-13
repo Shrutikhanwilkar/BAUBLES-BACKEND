@@ -49,14 +49,20 @@ const authenticateToken = async (req, res, next) => {
       { $set: { deviceToken, deviceType } },
       {
         new: true,
-        select: "_id email role status name isEmailVerified",
+        select: "_id email role status name isEmailVerified isDeactived",
       }
     );
 
     if (!userData) {
       return await sendError(res, "User not found", HTTPStatusCode.NOT_FOUND);
     }
-
+    if (userData.status=='inactive') {
+       return await sendError(
+         res,
+         "Your account is deactived by admin, Please contact to admin for more information",
+         HTTPStatusCode.UNAUTHORIZED
+       );
+    }
     if (!req.body) req.body = {};
     req.body.user = user;
     req.user = user;
