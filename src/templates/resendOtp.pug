@@ -1,43 +1,29 @@
+//- templates/email-verification-otp.pug
 doctype html
 html
   head
-    meta(charset="UTF-8")
-    title Baubles Verification Code
-    style.
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        padding: 20px;
-      }
-      .container {
-        max-width: 600px;
-        background: white;
-        margin: auto;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-      .otp-box {
-        font-size: 24px;
-        font-weight: bold;
-        padding: 15px;
-        background: #f1f1f1;
-        text-align: center;
-        margin: 20px 0;
-        border-radius: 6px;
-        letter-spacing: 4px;
-      }
-  body
-    .container
-      h2 Hello #{name},
-      p #{messageLine1}
-      p Your One-Time Password (OTP) is:
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+  body(style="font-family: Arial, sans-serif; color: #333; line-height:1.5; background:#f6f9fb; padding:20px;")
+    table(width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; padding:24px;")
+      tr
+        td
+          h3(style="margin:0 0 12px;") Hello #{name},
 
-      .otp-box #{otp}
+          p(style="margin:0 0 16px;")
+              br
+              | As requested, here is your new OTP :
 
-      p This OTP is valid for the next 10 minutes. Do not share this code with anyone.
-      p If you didn’t request this, please ignore this email.
+          p(style="font-size:26px; font-weight:bold; letter-spacing:3px; margin:10px 0;")
+            span(style="background:#f1f7ff; padding:12px 24px; border-radius:6px; display:inline-block;") #{otp}
 
-      br
-      p Regards,
-      p Team Baubles
+          p(style="margin:14px 0; color:#555;")
+            | This OTP will expire in 10 minutes.
+
+          p(style="margin-top:18px; color:#666; font-size:14px;")
+            | If you didn’t request this, you can safely ignore this email.
+
+          hr(style="margin:24px 0; border:none; border-top:1px solid #eee;")
+
+          p(style="margin:0;") Warm regards,
+          p(style="margin:0; font-weight:bold;") Team Baubles

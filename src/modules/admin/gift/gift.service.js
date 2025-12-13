@@ -6,7 +6,24 @@ import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 import giftcategoryModel from "../../../models/giftcategory.model.js";
 export default class GiftService {
   static async create(reqBody) {
+    if (!reqBody.category) {
+      throw new AppError({
+        status: false,
+        message: "Gift Package Required",
+        httpStatus: HTTPStatusCode.BAD_REQUEST,
+      });
+    }
+    let packageData= await giftcategoryModel.findOne({ _id: reqBody.category });
+    if (!packageData) {
+      throw new AppError({
+        status: false,
+        message: "Gift package not found",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
     const gift = await Gift.create(reqBody);
+    //send notification
+    
     return gift;
   }
 

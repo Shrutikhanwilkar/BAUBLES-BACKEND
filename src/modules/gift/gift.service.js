@@ -1,7 +1,16 @@
 import httpStatus from "http-status";
 import Gift from "../../models/gift.model.js";
 import AppError from "../../utils/appError.js";
-
+import authModel from "../../models/auth.model.js";
+import Children from "../../models/children.model.js";
+import giftcategoryModel from "../../models/giftcategory.model.js";
+import HTTPStatusCode from "../../utils/httpStatusCode.js";
+import {
+  isAgeMatch,
+  isFirstAppOpenToday,
+  isHolidayPeriod,
+  isWeekend,
+} from "../../utils/giftHelper.js";
 export default class GiftService {
   static async listGifts({ page = 1, limit = 10, search = "" }) {
     const skip = (page - 1) * limit;
@@ -46,8 +55,78 @@ export default class GiftService {
     return gift;
   }
 
-  static async getRandomGift() {
-    const giftData = await Gift.aggregate([{ $sample: { size: 1 } }]);
-    return  giftData[0];
+  static async getRandomGift(reqUser, limit = 20) {
+    const today = new Date();
+    const weekend = isWeekend(today);
+    const holiday = isHolidayPeriod(today);
+    const firstOpen = await isFirstAppOpenToday(reqUser._id);
+
+    const packages = await giftcategoryModel
+      .find({ isActive: true })
+      .sort({ priority: 1 })
+      .lean()
+      .filter((pkg) => isPackageActiveByDate(pkg, today));
+
+    const orderedPackageIds = [];
+
+    /* Exclusive First App Open */
+    if (firstOpen) {
+      const exclusivePkg = packages.find((p) => p.isExclusiveFirstAppOpen);
+      if (exclusivePkg) orderedPackageIds.push(exclusivePkg._id);
+    }
+
+    /* Holiday Package (only AFTER first open) */
+    if (!firstOpen && holiday) {
+      packages
+        .filter((p) => p.isHoliday)
+        .forEach((p) => orderedPackageIds.push(p._id));
+    }
+
+    /* Targeted Age Package */
+    for (const pkg of packages) {
+      if (pkg.isTargetedAgeOnly) {
+        const match = await isAgeMatch(reqUser._id, pkg);
+        if (match) orderedPackageIds.push(pkg._id);
+      }
+    }
+
+    /* Weekend Only */
+    if (weekend) {
+      packages
+        .filter((p) => p.isWeekendOnly)
+        .forEach((p) => orderedPackageIds.push(p._id));
+    }
+
+    /* Basic Package (ALWAYS LAST) */
+    packages
+      .filter((p) => p.isBasic)
+      .forEach((p) => orderedPackageIds.push(p._id));
+
+    if (!orderedPackageIds.length) {
+      throw new AppError({
+        status: false,
+        message: "No gift available, stay tuned!",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+    /* Fetch Gifts */
+    const gifts = await Gift.find({
+      isActive: true,
+      package: { $in: orderedPackageIds },
+    }).lean();
+    
+    if (!gifts.length) {
+      throw new AppError({
+        status: false,
+        message: "No gift available, stay tuned!",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+    /* Preserve order */
+    const orderedGifts = orderedPackageIds.flatMap((pkgId) =>
+      gifts.filter((g) => String(g.package) === String(pkgId))
+    );
+
+    return orderedGifts;
   }
 }

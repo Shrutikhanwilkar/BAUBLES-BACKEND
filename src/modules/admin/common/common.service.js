@@ -242,7 +242,7 @@ export default class CommonService {
       { iosVersion, androidVersion, type: "SETTING" }
     );
   }
-  static async sendBroadcastToAll() {
+  static async sendBroadcastToAll(reqBody) {
     const users = await authModel.find({
       deviceToken: { $exists: true, $ne: null },
       role: Role.USER,
@@ -251,12 +251,15 @@ export default class CommonService {
     if (!users.length) {
       return { success: false, message: "No users found with device tokens" };
     }
-
+    let title = "";
+    let body = "";
     const sendPromises = users.map((user) => {
       const parentName = user.name ? user.name : "Parent";
 
-      const title = "New broadcast message received";
-      const body = `${parentName} - you have received a new message from the NoN Bauble team. Tap to view.`;
+      title = reqBody?.title || "New broadcast message received";
+      body =
+        reqBody?.body ||
+        `${parentName} - you have received a new message from the NoN Bauble team. Tap to view.`;
 
       const data = {
         type: "DASHBOARD",
@@ -273,7 +276,12 @@ export default class CommonService {
 
     await Promise.allSettled(sendPromises);
 
-    await broadcastModel.create({ activeUserCount: users.length });
+    await broadcastModel.create({
+      activeUserCount: users.length,
+      body: body,
+      title: title,
+      type: reqBody?.type,
+    });
     return {
       success: true,
       message: "Broadcast message sent to all users",

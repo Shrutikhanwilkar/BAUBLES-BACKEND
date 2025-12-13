@@ -54,6 +54,7 @@ export default class MusicService {
                     duration: 1,
                     musicFile: 1,
                     createdAt: 1,
+                    isFree: 1,
                     "statusCategory._id":1,
                     "statusCategory.name": 1,
                     "statusCategory.color": 1,

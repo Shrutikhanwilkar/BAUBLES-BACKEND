@@ -48,4 +48,10 @@ router.delete(
   UserController.deleteAdmin
 );
 
+router.put(
+  "/update-user-status/:id",
+  authenticateToken,
+  UserController.updateUserStatus
+);
+
 export default router;

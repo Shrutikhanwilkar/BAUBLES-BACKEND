@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema(
     deviceToken: { type: String, default: null },
     deviceType: { type: String, default: null },
     isFirstAppOpen: { type: Boolean, default: false },
+    status: { type: String, default: "active" },
+    isDeactived: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -19,7 +19,7 @@ export default class GiftController {
   });
 
   static getRandomGift = asyncHandler(async (req, res) => {
-    const data = await GiftService.getRandomGift();
+    const data = await GiftService.getRandomGift(req.user);
     return sendSuccess(res, data, "Gift fetched successfully", HTTPStatusCode.OK);
   });
 }

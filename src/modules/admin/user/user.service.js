@@ -4,9 +4,14 @@ import Children from "../../../models/children.model.js";
 import AppError from "../../../utils/appError.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 import messageModel from "../../../models/message.model.js";
-import { hashPassword } from "../../../utils/passwordHelper.js";
+import { sendPushNotification } from "../../../utils/fcmNotification.js";
+import {
+  generateStrongPassword,
+  hashPassword,
+} from "../../../utils/passwordHelper.js";
+import { sendEmailToAdmin } from "../../../utils/mailer.js";
 export default class UserService {
-  static async listUsers({ page = 1, limit = 10, search }) {
+  static async listUsers({ page = 1, limit = 10, search, status }) {
     page = Number(page) || 1;
     limit = Number(limit) || 10;
     const skip = (page - 1) * limit;
@@ -16,6 +21,9 @@ export default class UserService {
     if (search?.trim()) {
       const regex = new RegExp(search.trim(), "i");
       match.$or = [{ name: regex }, { email: regex }, { mobile: regex }];
+    }
+    if (status) {
+      match.status = status;
     }
 
     const pipeline = [
@@ -142,6 +150,8 @@ export default class UserService {
           mobile: { $ifNull: ["$mobile", ""] },
           isEmailVerified: 1,
           createdAt: 1,
+          isDeactived: 1,
+          status: 1,
           childrenCount: 1,
           childrens: 1, // includes child.lastMessage
           lastMessage: 1, // user’s own last message
@@ -320,10 +330,13 @@ export default class UserService {
     }
 
     payload.role = "ADMIN"; //force role to ADMIN
-    payload.password = await hashPassword("Admin@12345");
+    let password = await generateStrongPassword();
+    payload.password = await hashPassword(password);
     payload.isEmailVerified = true;
 
     const user = await User.create(payload);
+    //send email and password
+    await sendEmailToAdmin(user, password);
     return user;
   }
 
@@ -407,5 +420,46 @@ export default class UserService {
 
     await admin.deleteOne();
     return admin;
+  }
+  static async updateUserStatus(userId) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new AppError({
+        message: "Invalid user ID",
+        httpStatus: HTTPStatusCode.BAD_REQUEST,
+      });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new AppError({
+        message: "User not found",
+        httpStatus: HTTPStatusCode.NOT_FOUND,
+      });
+    }
+
+    user.status = user.status === "active" ? "inactive" : "active";
+    await user.save();
+
+    const statusText = user.status === "active" ? "activated" : "deactivated";
+
+    /* 🔔 Push Notification */
+    if (user.deviceToken) {
+      const title = "Account Status Changed";
+      const body = `Your account has been ${statusText}. Tap to continue.`;
+
+      sendPushNotification(user._id, user.deviceToken, title, body, {
+        type: "DASHBOARD",
+      });
+    }
+
+    return {
+      success: true,
+      message: `User successfully ${statusText}`,
+      data: {
+        userId: user._id,
+        status: user.status,
+      },
+    };
   }
 }
