@@ -169,7 +169,6 @@ export default class ReportService {
   }
 
   static async totalNiceCount() {
-    let category=await categ
     return messageModel.countDocuments({ status: "NICE" });
   }
 
