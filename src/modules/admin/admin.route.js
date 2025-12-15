@@ -9,7 +9,8 @@ import commonRoutes from './common/common.route.js';
 import userRoutes from "./user/user.route.js"
 import childrenRoutes from "./children/children.route.js"
 import audioPlaybackModel from "../../models/audioPlayback.model.js";
-import audioPlayBackRoutes from "./audioPlayback/audioPlayback.route.js"
+import audioPlayBackRoutes from "./audioPlayback/audioPlayback.route.js";
+import reportRoutes from './reports/report.route.js';
 const router = Router()
 router.use("/user", userRoutes)
 router.use("/children", childrenRoutes)
@@ -21,5 +22,5 @@ router.use("/gift", giftRoutes)
 router.use("/auth", authRoute)
 router.use("/", commonRoutes);
 router.use("/audio-playback", audioPlayBackRoutes);
-
+router.use("/reports", reportRoutes);
 export default router;

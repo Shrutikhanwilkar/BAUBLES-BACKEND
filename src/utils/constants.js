@@ -4,3 +4,10 @@ export const Role = Object.freeze({
   SUPERADMIN: "SUPERADMIN",
 });
 export const Salt = 10;
+
+export const Pagination = Object.freeze({
+  Page: 1,
+  Limit: 10,
+  
+});
+
