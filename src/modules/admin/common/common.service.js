@@ -227,11 +227,11 @@ export default class CommonService {
     }
   }
   static async appVerisonUpdate(reqBody) {
-    const { iosVersion, androidVersion, forceUpdate } = reqBody;
+    const { iosVersion, androidVersion, forceUpdate,notes } = reqBody;
 
     const updatedVersion = await appVersionModel.findOneAndUpdate(
       {},
-      { iosVersion, androidVersion, forceUpdate },
+      { iosVersion, androidVersion, forceUpdate ,notes},
       { new: true, upsert: true }
     );
 

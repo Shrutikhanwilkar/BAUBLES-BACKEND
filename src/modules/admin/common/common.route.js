@@ -44,7 +44,7 @@ router.post(
 
 router.post("/app-version-update", authenticateToken, CommonController.appVerisonUpdate); // always upserts one
 router.get("/app-version",  authenticateToken,CommonController.appVersion);
-router.get("/app-version", authenticateToken, CommonController.appVersion);
+// router.get("/app-version", authenticateToken, CommonController.appVersion);
 router.post(
   "/broadcast/send",
   authenticateToken,
