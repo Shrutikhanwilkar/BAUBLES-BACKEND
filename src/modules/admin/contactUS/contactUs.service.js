@@ -79,7 +79,7 @@ export default class ContactUsService {
 
   static async updateContactQuery(contactId, reqBody) {
     const contact = await ContactUs.findById(contactId);
-
+console.log(reqBody)
     if (!contact) {
       throw new AppError({
         status: false,
@@ -87,19 +87,21 @@ export default class ContactUsService {
         httpStatus: HTTPStatusCode.NOT_FOUND,
       });
     }
-
-    if (reqBody.isResolved !== undefined && !reqBody.solution) {
-      contact.isResolved = reqBody.isResolved;
-      await contact.save();
-      return contact;
+    if (reqBody.solutionImages){
+      contact.solutionImages=reqBody.solutionImages;
     }
+      if (reqBody.isResolved !== undefined && !reqBody.solution) {
+        contact.isResolved = reqBody.isResolved;
+        await contact.save();
+        return contact;
+      }
     if (reqBody.solution) {
       contact.isResolved = true; // Mark resolved
       contact.solution = reqBody.solution; // Save solution
       await contact.save();
 
       // ---- Send Email using AWS SES ----
-      sendContactSolution(contact, reqBody.solution);
+      sendContactSolution(contact, reqBody.solution, reqBody?.solutionImages);
 
       return contact;
     }

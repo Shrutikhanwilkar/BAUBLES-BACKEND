@@ -57,7 +57,7 @@ export const sendRegistrationOtp =async(userData, otpData) => {
 };
 
 // ----- Contact Us Response -----
-export const sendContactSolution = (contact, solutionMessage) => {
+export const sendContactSolution = (contact, solutionMessage,files) => {
   try {
     const templatePath = path.join(templateDir, "contactSolution.pug");
     const html = pug.renderFile(templatePath, {

@@ -31,6 +31,7 @@ export const updateProfileSchema = Joi.object({
   email: Joi.string().email().messages({
     "string.email": "Please provide a valid email address",
   }),
+  countryCode: Joi.string().optional(),
   mobile: Joi.string()
     .pattern(/^\+?\d{6,15}$/)
     .messages({

@@ -12,6 +12,7 @@ const contactUsSchema = new Schema(
     isResolved: { type: Boolean, required: true, default: false },
     solution: { type: String, required: false, default: "" },
     images: [{ type: String, required: false, default: [] }],
+    solutionImages: [{ type: String, required: false, default: [] }],
     type: {
       type: String,
       required: true,

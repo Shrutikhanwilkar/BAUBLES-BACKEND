@@ -227,11 +227,11 @@ export default class CommonService {
     }
   }
   static async appVerisonUpdate(reqBody) {
-    const { iosVersion, androidVersion, forceUpdate,notes } = reqBody;
+    const { iosVersion, androidVersion, forceUpdate, notes } = reqBody;
 
     const updatedVersion = await appVersionModel.findOneAndUpdate(
       {},
-      { iosVersion, androidVersion, forceUpdate ,notes},
+      { iosVersion, androidVersion, forceUpdate, notes },
       { new: true, upsert: true }
     );
 
@@ -288,19 +288,23 @@ export default class CommonService {
       users: users.length,
     };
   }
-  static async broadcastHistory() {
-    try {
-      // Fetch all broadcast messages sorted by latest first
-      const history = await broadcastModel.find().sort({ createdAt: -1 });
+  static async broadcastHistory(reqQuery) {
+    let page = Number(reqQuery.page) || 1;
+    let limit = Number(reqQuery.limit) || 10;
+    const skip = (page - 1) * limit;
 
-      return {
-        total: history.length,
-        data: history,
-      };
-    } catch (error) {
-      console.error("Error fetching broadcast history:", error);
-      throw new CustomError("Unable to fetch broadcast history", 500);
-    }
+    const [data, total] = await Promise.all([
+      broadcastModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      broadcastModel.countDocuments(),
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      data,
+    };
   }
 
   // Get latest version (Admin View)
