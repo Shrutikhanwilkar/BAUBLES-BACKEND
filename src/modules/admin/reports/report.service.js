@@ -28,7 +28,7 @@ export default class ReportService {
         $lte: new Date(reqQuery.toDate),
       };
     }
-    console.log(query, "--------");
+
     const result = await messageModel.aggregate([
       { $match: query },
       {
@@ -98,34 +98,33 @@ export default class ReportService {
 
   static async reportDashbaord(query) {
     const { type } = query;
-
-    // 🔹 COMMON TOTALS (always required)
+    let nice = await StatusCategory.findOne({ colourName: "green" });
+    let naughty = await StatusCategory.findOne({ colourName: "red" });
     const commonTotalsPromise = Promise.all([
       this.totalChildCount(),
-      this.totalNiceCount(),
-      this.totalNaughtyCount(),
+      this.totalNiceCount(nice._id),
+      this.totalNaughtyCount(naughty._id),
     ]);
 
     let typeSpecificPromise;
 
-    // 🔹 TYPE-BASED LOGIC
     switch (type) {
       case "popular":
         typeSpecificPromise = Promise.all([
-          this.top20NiceBoys(),
-          this.top20NiceGirls(),
+          this.top20PopularBoysName(),
+          this.top20PopularGirlsName(),
         ]);
         break;
 
       case "behaviour":
         typeSpecificPromise = Promise.all([
-          this.top20NiceChildren(),
-          this.top20NaughtyChildren(),
+          this.top20NiceChildren(nice._id),
+          this.top20NaughtyChildren(naughty._id),
         ]);
         break;
 
-      case "status":
-        typeSpecificPromise = this.stateWiseNiceNaughty();
+      case "state":
+        typeSpecificPromise = this.stateWiseNiceNaughty(nice._id, naughty._id);
         break;
 
       default:
@@ -140,8 +139,8 @@ export default class ReportService {
     let data = {};
 
     if (type === "popular") {
-      const [topNiceBoys, topNiceGirls] = typeData;
-      data = { topNiceBoys, topNiceGirls };
+      const [top20BoysName, top20GirlsName] = typeData;
+      data = { top20BoysName, top20GirlsName };
     }
 
     if (type === "behaviour") {
@@ -149,7 +148,7 @@ export default class ReportService {
       data = { topNice, topNaughty };
     }
 
-    if (type === "status") {
+    if (type === "state") {
       data = typeData;
     }
 
@@ -168,89 +167,87 @@ export default class ReportService {
     return childCount;
   }
 
-  static async totalNiceCount() {
-    return messageModel.countDocuments({ status: "NICE" });
+  static async totalNiceCount(category) {
+    return await messageModel.countDocuments({ statusCategoryId: category });
   }
 
-  static async totalNaughtyCount() {
-    return messageModel.countDocuments({ status: "NAUGHTY" });
+  static async totalNaughtyCount(category) {
+    return await messageModel.countDocuments({ statusCategoryId: category });
   }
 
   // ================= POPULAR =================
 
-  static async top20NiceBoys() {
-    return this._topNiceByGender("BOY");
-  }
-
-  static async top20NiceGirls() {
-    return this._topNiceByGender("GIRL");
-  }
-
-  static async _topNiceByGender(gender) {
-    return messageModel.aggregate([
-      { $match: { status: "NICE" } },
+  static async top20PopularBoysName() {
+    let res = await Children.aggregate([
       {
-        $lookup: {
-          from: "childrens",
-          localField: "childId",
-          foreignField: "_id",
-          as: "child",
+        $match: {
+          firstName: { $ne: null, $ne: "" },
+          gender: "male",
         },
       },
-      { $unwind: "$child" },
-      { $match: { "child.gender": gender } },
-      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: { $toLower: "$firstName" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1, firstName: 1 } },
       { $limit: 20 },
       {
         $project: {
           _id: 0,
-          childId: "$child._id",
-          name: "$child.firstName",
-          gender: "$child.gender",
+          firstName: "$_id",
+          count: 1,
         },
       },
     ]);
+    return res;
+  }
+
+  static async top20PopularGirlsName() {
+    let res = await Children.aggregate([
+      {
+        $match: {
+          firstName: { $ne: null, $ne: "" },
+          gender: "female",
+        },
+      },
+      {
+        $group: {
+          _id: { $toLower: "$firstName" }, // merge Aman, aman, AMAN
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1, firstName: 1 } },
+      { $limit: 20 },
+      {
+        $project: {
+          _id: 0,
+          firstName: "$_id",
+          count: 1,
+        },
+      },
+    ]);
+    return res;
   }
 
   // ================= BEHAVIOUR =================
 
-  static async top20NiceChildren() {
-    return this._topByBehaviour("NICE");
+  static async top20NiceChildren(category) {
+    return this.topByBehaviour(category);
   }
 
-  static async top20NaughtyChildren() {
-    return this._topByBehaviour("NAUGHTY");
+  static async top20NaughtyChildren(category) {
+    return this.topByBehaviour(category);
   }
 
-  static async _topByBehaviour(status) {
-    return messageModel.aggregate([
-      { $match: { status } },
+  static async topByBehaviour(category) {
+    let res = await messageModel.aggregate([
       {
-        $lookup: {
-          from: "childrens",
-          localField: "childId",
-          foreignField: "_id",
-          as: "child",
+        $match: {
+          statusCategoryId: category,
         },
       },
-      { $unwind: "$child" },
-      { $sort: { createdAt: -1 } },
-      { $limit: 20 },
-      {
-        $project: {
-          _id: 0,
-          childId: "$child._id",
-          name: "$child.firstName",
-          status,
-        },
-      },
-    ]);
-  }
-
-  // ================= STATUS =================
-
-  static async stateWiseNiceNaughty() {
-    return messageModel.aggregate([
       {
         $lookup: {
           from: "childrens",
@@ -264,20 +261,73 @@ export default class ReportService {
       {
         $group: {
           _id: {
+            childId: "$childId",
+            statusCategoryId: "$statusCategoryId",
+          },
+          firstName: { $first: "$child.firstName" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1, firstName: 1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          childId: "$_id.childId",
+          statusCategoryId: "$_id.statusCategoryId",
+          firstName: 1,
+          count: 1,
+        },
+      },
+    ]);
+    return res;
+  }
+
+  // ================= STATE =================
+
+  static async stateWiseNiceNaughty(niceCategoryId, naughtyCategoryId) {
+    const niceId = niceCategoryId;
+    const naughtyId = naughtyCategoryId;
+
+    const res = await messageModel.aggregate([
+      {
+        $lookup: {
+          from: "childrens",
+          localField: "childId",
+          foreignField: "_id",
+          as: "child",
+        },
+      },
+      { $unwind: "$child" },
+
+      // 🔥 FIRST GROUP: state + statusCategoryId (from messageModel)
+      {
+        $group: {
+          _id: {
             state: "$child.state",
-            status: "$status",
+            statusCategoryId: "$statusCategoryId",
           },
           count: { $sum: 1 },
         },
       },
 
+      // 🔥 SECOND GROUP: pivot nice / naughty
       {
         $group: {
           _id: "$_id.state",
-          data: {
-            $push: {
-              status: "$_id.status",
-              count: "$count",
+          nice: {
+            $sum: {
+              $cond: [{ $eq: ["$_id.statusCategoryId", niceId] }, "$count", 0],
+            },
+          },
+          naughty: {
+            $sum: {
+              $cond: [
+                { $eq: ["$_id.statusCategoryId", naughtyId] },
+                "$count",
+                0,
+              ],
             },
           },
         },
@@ -287,31 +337,13 @@ export default class ReportService {
         $project: {
           _id: 0,
           state: "$_id",
-          nice: {
-            $sum: {
-              $map: {
-                input: "$data",
-                as: "d",
-                in: {
-                  $cond: [{ $eq: ["$$d.status", "NICE"] }, "$$d.count", 0],
-                },
-              },
-            },
-          },
-          naughty: {
-            $sum: {
-              $map: {
-                input: "$data",
-                as: "d",
-                in: {
-                  $cond: [{ $eq: ["$$d.status", "NAUGHTY"] }, "$$d.count", 0],
-                },
-              },
-            },
-          },
+          nice: 1,
+          naughty: 1,
         },
       },
     ]);
+
+    return res;
   }
 
   static async reportListByState(reqQuery) {
