@@ -1,9 +1,9 @@
 import httpStatus from "http-status";
 import Gift from "../../../models/gift.model.js";
 import AppError from "../../../utils/appError.js";
-import { removeFromFirebase } from "../../../middleware/upload.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
 import giftcategoryModel from "../../../models/giftcategory.model.js";
+import { removeFromS3 } from "../../../middleware/s3Upload.js";
 export default class GiftService {
   static async create(reqBody) {
     if (!reqBody.category) {
@@ -64,7 +64,7 @@ export default class GiftService {
     try {
       if (!gift) {
         if (newImage) {
-          await removeFromFirebase(newImage);
+          await removeFromS3(newImage);
         }
         throw new AppError({
           status: false,
@@ -77,13 +77,13 @@ export default class GiftService {
         runValidators: true,
       });
       if (newImage && oldImage && newImage !== oldImage) {
-        await removeFromFirebase(oldImage);
+        await removeFromS3(oldImage);
       }
 
       return updatedGift;
     } catch (error) {
       if (newImage && (!gift || newImage !== oldImage)) {
-        await removeFromFirebase(newImage);
+        await removeFromS3(newImage);
       }
       throw error;
     }
@@ -99,7 +99,7 @@ export default class GiftService {
       });
     }
     await gift.deleteOne();
-    await removeFromFirebase(gift.image);
+    await removeFromS3(gift.image);
     return null;
   }
 

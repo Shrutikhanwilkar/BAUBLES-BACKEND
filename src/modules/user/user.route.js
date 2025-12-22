@@ -3,7 +3,7 @@ import authenticateToken from "../../middleware/checkAuthToken.js";
 import UserController from "./user.controller.js";
 import { updateUserSchema } from "./user.validation.js";
 import { validate } from "../../middleware/validation.js";
-import { uploadSingleToFirebase } from "../../middleware/upload.js";
+import { uploadSingleToS3 } from "../../middleware/s3Upload.js";
 
 const router = Router();
 router.get("/static-data", UserController.staticData);
@@ -16,7 +16,7 @@ router.put(
 );
 router.put(
   "/update-avatar",
-  uploadSingleToFirebase("avatar"),
+  uploadSingleToS3("avatar"),
   authenticateToken,
   UserController.updateAvatar
 );

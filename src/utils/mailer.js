@@ -1,7 +1,13 @@
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import {
+  SESClient,
+  SendEmailCommand,
+  SendRawEmailCommand,
+} from "@aws-sdk/client-ses";
 import pug from "pug";
 import path from "path";
-
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+const s3 = new S3Client({ region: process.env.AWS_REGION });
+import mime from "mime-types";
 const sesClient = new SESClient({
   region: process.env.AWS_REGION,
   credentials: {
@@ -29,14 +35,82 @@ export const sendSES = async (to, subject, html) => {
     console.log("SES Email sent:", subject);
     return true;
   } catch (err) {
-    console.log(err)
+    console.log(err);
     console.error("SES Email failed:", err.message);
     return false;
   }
 };
 
+export const sendSESWithMultipleS3Attachments = async (
+  to,
+  subject,
+  html,
+  files // ["uploads/file1.jpg", "uploads/file2.png"]
+) => {
+  try {
+    let keys = files.map((url) =>
+      decodeURIComponent(new URL(url).pathname.slice(1))
+    );
+    console.log(keys);
+    const boundary = `NextPart_${Date.now()}`;
+
+    let rawMessage = `From: ${process.env.APP_NAME} <${process.env.SMTP_FROM_ADDRESS}>
+To: ${to}
+Subject: ${subject}
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="${boundary}"
+
+--${boundary}
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+${html}
+`;
+
+    for (const key of keys) {
+      // ❗ ensure no leading slash
+      const cleanKey = key.startsWith("/") ? key.slice(1) : key;
+
+      const s3Object = await s3.send(
+        new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET,
+          Key: cleanKey,
+        })
+      );
+
+      const buffer = await streamToBuffer(s3Object.Body);
+      const base64File = buffer.toString("base64");
+      const fileName = cleanKey.split("/").pop();
+      const mimeType = mime.lookup(fileName) || "application/octet-stream";
+
+      rawMessage += `
+--${boundary}
+Content-Type: ${mimeType}; name="${fileName}"
+Content-Disposition: attachment; filename="${fileName}"
+Content-Transfer-Encoding: base64
+
+${base64File}
+`;
+    }
+
+    rawMessage += `\n--${boundary}--`;
+
+    await sesClient.send(
+      new SendRawEmailCommand({
+        RawMessage: { Data: Buffer.from(rawMessage) },
+      })
+    );
+
+    console.log("✅ SES email sent with multiple attachments");
+    return true;
+  } catch (err) {
+    console.error("❌ SES Email failed:", err);
+    return false;
+  }
+};
+
 // ----- Registration OTP -----
-export const sendRegistrationOtp =async(userData, otpData) => {
+export const sendRegistrationOtp = async (userData, otpData) => {
   try {
     const templatePath = path.join(templateDir, "signupOtp.pug");
 
@@ -55,20 +129,27 @@ export const sendRegistrationOtp =async(userData, otpData) => {
 
   return true;
 };
+const streamToBuffer = async (stream) =>
+  new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
 
 // ----- Contact Us Response -----
-export const sendContactSolution = (contact, solutionMessage,files) => {
+export const sendContactSolution = (contact, solutionMessage, files) => {
   try {
     const templatePath = path.join(templateDir, "contactSolution.pug");
     const html = pug.renderFile(templatePath, {
       name: contact.name,
       email: contact.email,
       message: solutionMessage,
-      query:contact.message
+      query: contact.message,
     });
     const subject = "Your Contact Query Response – Baubles";
 
-    sendSES(contact.email, subject, html);
+    sendSESWithMultipleS3Attachments(contact.email, subject, html, files);
   } catch (err) {
     console.error("Failed to send contact solution email:", err.message);
   }
@@ -78,7 +159,7 @@ export const sendContactSolution = (contact, solutionMessage,files) => {
 
 export const sendResendOtp = async (userData, otpData) => {
   try {
-    const templatePath = path.join(templateDir, "resendOtp.pug"); 
+    const templatePath = path.join(templateDir, "resendOtp.pug");
 
     const html = pug.renderFile(templatePath, {
       name: userData.name,
@@ -121,7 +202,7 @@ export const sendForgotPasswordOtp = async (userData, otpData) => {
 };
 
 // ----- Admin Create OTP -----
-export const sendEmailToAdmin =async(userData, password) => {
+export const sendEmailToAdmin = async (userData, password) => {
   try {
     const templatePath = path.join(templateDir, "adminEmail.pug");
 
@@ -140,4 +221,3 @@ export const sendEmailToAdmin =async(userData, password) => {
 
   return true;
 };
-

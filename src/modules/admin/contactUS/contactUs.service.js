@@ -79,7 +79,6 @@ export default class ContactUsService {
 
   static async updateContactQuery(contactId, reqBody) {
     const contact = await ContactUs.findById(contactId);
-console.log(reqBody)
     if (!contact) {
       throw new AppError({
         status: false,

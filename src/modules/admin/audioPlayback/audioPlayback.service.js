@@ -1,8 +1,8 @@
 
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
-import { removeFromFirebase } from "../../../middleware/upload.js";
 import AppError from "../../../utils/appError.js";
 import audioPlaybackModel from "../../../models/audioPlayback.model.js";
+import { removeFromS3 } from "../../../middleware/s3Upload.js";
 export default class AudioPlayBackService {
   static async addAudioPlayBack(payload) {
     try {
@@ -56,8 +56,8 @@ export default class AudioPlayBackService {
     await audioPlaybackModel.deleteOne({ _id: id });
 
     // remove video file from firebase storage
-    await removeFromFirebase(video.videoFile);
-    await removeFromFirebase(video.thumbnail);
+    await removeFromS3(video.videoFile);
+    await removeFromS3(video.thumbnail);
     return;
   }
 }

@@ -9,9 +9,9 @@ if (!admin.apps.length) {
   // Fix for escaped `\n` in private_key from .env
   serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
+  // admin.initializeApp({
+  //   credential: admin.credential.cert(serviceAccount),
+  // });
 }
 
 export default admin;

@@ -1,11 +1,11 @@
 import httpStatus from "http-status";
 import Children from "../../models/children.model.js";
 import AppError from "../../utils/appError.js";
-import { removeFromFirebase } from "../../middleware/upload.js";
 import mongoose from "mongoose";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 import authModel from "../../models/auth.model.js";
 import { sendPushNotification } from "../../utils/fcmNotification.js";
+import { removeFromS3 } from "../../middleware/s3Upload.js";
 export default class ChildrenService {
   static async addChild(reqBody) {
     const { firstName, dob, state, gender, avatar } = reqBody;
@@ -60,7 +60,7 @@ export default class ChildrenService {
     } catch (err) {
       // Rollback avatar file if provided and save fails
       if (avatar) {
-        await removeFromFirebase(avatar);
+        await removeFromS3(avatar);
       }
       throw new AppError({
         message: "Failed to add child",
@@ -145,14 +145,14 @@ export default class ChildrenService {
     try {
       child.avatar = avatarUrl;
       await child.save();
-      await removeFromFirebase(existingAvatar);
+      await removeFromS3(existingAvatar);
       return {
         _id: child._id,
         firstName: child.firstName,
         avatar: child.avatar,
       };
     } catch (err) {
-      await removeFromFirebase(avatarUrl);
+      await removeFromS3(avatarUrl);
 
       throw new AppError({
         message: "Failed to update avatar",
