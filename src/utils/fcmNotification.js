@@ -48,8 +48,8 @@ export const sendBulkPushNotification = async (title, body, data = {}) => {
     const users = await authModel.find({
       deviceToken: { $exists: true, $ne: null },
       role: Role.USER,
+      status:'active'
     });
-
     if (!users.length) {
       return;
     }

@@ -6,8 +6,7 @@ import {
   updateProfileSchema,
 } from "./common.validation.js";
 import { validate } from "../../../middleware/validation.js";
-import { uploadSingleToFirebase } from "../../../middleware/upload.js";
-
+import { uploadSingleToS3 } from "../../../middleware/s3Upload.js";
 const router = Router();
 router.use(authenticateToken);
 
@@ -21,13 +20,13 @@ router.put(
 router.put(
   "/update-profile",
   authenticateToken,
-  uploadSingleToFirebase("avatar"),
+  uploadSingleToS3("avatar"),
   validate(updateProfileSchema),
   CommonController.updateProfile
 );
 router.post(
   "/upload-avatar",
-  uploadSingleToFirebase("avatar"),
+  uploadSingleToS3("avatar"),
   CommonController.uploadAvatar
 );
 router.get(
@@ -42,8 +41,12 @@ router.post(
   CommonController.addDashboardVedio
 );
 
-router.post("/app-version-update", authenticateToken, CommonController.appVerisonUpdate); // always upserts one
-router.get("/app-version",  authenticateToken,CommonController.appVersion);
+router.post(
+  "/app-version-update",
+  authenticateToken,
+  CommonController.appVerisonUpdate
+); // always upserts one
+router.get("/app-version", authenticateToken, CommonController.appVersion);
 // router.get("/app-version", authenticateToken, CommonController.appVersion);
 router.post(
   "/broadcast/send",

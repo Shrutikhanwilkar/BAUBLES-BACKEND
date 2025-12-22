@@ -1,12 +1,12 @@
 import httpStatus from "http-status";
 import User from "../../models/auth.model.js";
 import AppError from "../../utils/appError.js";
-import { removeFromFirebase } from "../../middleware/upload.js";
 import StatusCategory from "../../models/statusCategory.model.js";
 import StaticPage from "../../models/staticPage.model.js";
 import HTTPStatusCode from "../../utils/httpStatusCode.js";
 import audioPlaybackModel from "../../models/audioPlayback.model.js";
 import notificationModel from "../../models/notification.model.js";
+import { removeFromS3 } from "../../middleware/s3Upload.js";
 
 export default class UserService {
   static async getProfile(userId) {
@@ -63,7 +63,7 @@ export default class UserService {
       user.avatar = avatarUrl;
       await user.save();
       if (existingAvatar) {
-        await removeFromFirebase(existingAvatar);
+        await removeFromS3(existingAvatar);
       }
 
       return {
@@ -72,7 +72,7 @@ export default class UserService {
         avatar: user.avatar,
       };
     } catch (err) {
-      await removeFromFirebase(avatarUrl);
+      await removeFromS3(avatarUrl);
       throw new AppError({
         message: "Failed to update avatar",
         httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,

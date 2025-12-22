@@ -2,7 +2,7 @@ import { Router } from "express";
 import authenticateToken from "../../../middleware/checkAuthToken.js";
 import UserController from "./user.controller.js";
 import { isSuperAdmin } from "../../../middleware/checkIsSuperAdmin.js";
-import { uploadSingleToFirebase } from "../../../middleware/upload.js";
+import { uploadSingleToS3 } from "../../../middleware/s3Upload.js";
 const router = Router();
 
 router.use(authenticateToken);
@@ -17,7 +17,7 @@ router.get(
 // super admin can add edit delte admins
 router.post(
   "/admin/add",
-  uploadSingleToFirebase("avatar"),
+  uploadSingleToS3("avatar"),
   authenticateToken,
   isSuperAdmin,
   UserController.addAdmin
@@ -36,7 +36,7 @@ router.get(
 );
 router.put(
   "/admin/edit/:id",
-  uploadSingleToFirebase("avatar"),
+  uploadSingleToS3("avatar"),
   authenticateToken,
   isSuperAdmin,
   UserController.editAdmin

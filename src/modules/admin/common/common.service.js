@@ -3,7 +3,6 @@ import Children from "../../../models/children.model.js";
 import Gift from "../../../models/gift.model.js";
 import Music from "../../../models/music.model.js";
 import HTTPStatusCode from "../../../utils/httpStatusCode.js";
-import { removeFromFirebase } from "../../../middleware/upload.js";
 import AppError from "../../../utils/appError.js";
 import audioPlaybackModel from "../../../models/audioPlayback.model.js";
 import { Role } from "../../../utils/constants.js";
@@ -15,36 +14,10 @@ import {
 } from "../../../utils/fcmNotification.js";
 import authModel from "../../../models/auth.model.js";
 import broadcastModel from "../../../models/broadcast.model.js";
+import ReportService from "../reports/report.service.js";
+import StatusCategory from "../../../models/statusCategory.model.js";
+import { removeFromS3 } from "../../../middleware/s3Upload.js";
 export default class CommonService {
-  // static async getDashboardStats() {
-  //   const [
-  //     userCount,
-  //     childrenCount,
-  //     giftCount,
-  //     musicCount,
-  //     dashbaordVideo,
-  //     maleChildrenCount,
-  //     femaleChildrenCount,
-  //   ] = await Promise.all([
-  //     User.countDocuments({ role: "USER" }),
-  //     Children.countDocuments(),
-  //     Gift.countDocuments(),
-  //     Music.countDocuments(),
-  //     audioPlaybackModel.findOne({ isDashboard: true }).select("videoFile"),
-  //     Children.countDocuments({ gender: "male" }),
-  //     Children.countDocuments({ gender: "female" }),
-  //   ]);
-
-  //   return {
-  //     userCount,
-  //     childrenCount,
-  //     giftCount,
-  //     musicCount,
-  //     dashbaordVideo,
-  //     maleChildrenCount,
-  //     femaleChildrenCount,
-  //   };
-  // }
   static async getDashboardStats() {
     const [
       userCount,
@@ -55,6 +28,8 @@ export default class CommonService {
       musicCount,
       dashboardVideo,
       stateWiseCounts,
+      nice,
+      naughty,
     ] = await Promise.all([
       User.countDocuments({ role: "USER" }),
       Children.countDocuments(),
@@ -87,6 +62,8 @@ export default class CommonService {
           },
         },
       ]),
+      StatusCategory.findOne({ colourName: "green" }),
+      StatusCategory.findOne({ colourName: "red" }),
     ]);
 
     // Convert array → object:  { "Victoria": 12, "Queensland": 5 }
@@ -104,6 +81,8 @@ export default class CommonService {
       musicCount,
       dashboardVideo,
       stateCounts,
+      niceCount: await ReportService.totalNiceCount(nice._id),
+      naughtyCount: await ReportService.totalNaughtyCount(naughty._id),
     };
   }
 
@@ -190,7 +169,7 @@ export default class CommonService {
       user.avatar = avatarUrl;
       await user.save();
       if (existingAvatar) {
-        await removeFromFirebase(existingAvatar);
+        await removeFromS3(existingAvatar);
       }
 
       return {
@@ -199,7 +178,7 @@ export default class CommonService {
         avatar: user.avatar,
       };
     } catch (err) {
-      await removeFromFirebase(avatarUrl);
+      await removeFromS3(avatarUrl);
       throw new AppError({
         message: "Failed to update avatar",
         httpStatus: HTTPStatusCode.INTERNAL_SERVER_ERROR,
@@ -214,9 +193,15 @@ export default class CommonService {
         videoFile: reqBody.videoFile,
         isDashboard: true,
       });
-      data = await audioPlaybackModel
-        .findOne({ isDashboard: true })
-        .select("videoFile");
+      // data = await audioPlaybackModel
+      //   .findOne({ isDashboard: true })
+      //   .select("videoFile");
+      // Send Notiifcation to all Users
+      await sendBulkPushNotification(
+        "What’s New on Your Dashboard?",
+        `Check out the latest dashboard video update.`,
+        { type: "DASHBOARD" }
+      );
       return data;
     } catch (err) {
       throw new AppError({
@@ -235,7 +220,7 @@ export default class CommonService {
       { new: true, upsert: true }
     );
 
-    // 🔔 Send Notification to All Users
+    // Send Notification to All Users
     await sendBulkPushNotification(
       "App Update Available!",
       `App updated. Tap to see what is new`,
@@ -246,6 +231,7 @@ export default class CommonService {
     const users = await authModel.find({
       deviceToken: { $exists: true, $ne: null },
       role: Role.USER,
+      status: "active",
     });
 
     if (!users.length) {
