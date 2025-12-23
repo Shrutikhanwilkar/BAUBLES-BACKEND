@@ -1,7 +1,8 @@
-import admin from "./firebase.js";
+import admin from "../config/firebase.js";
 import notificationModel from "../models/notification.model.js";
 import authModel from "../models/auth.model.js";
 import { Role } from "./constants.js";
+
 export const sendPushNotification = async (
   userId,
   token,

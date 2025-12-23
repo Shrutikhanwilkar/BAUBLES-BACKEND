@@ -19,6 +19,14 @@ const sesClient = new SESClient({
 const appName = process.env.APP_NAME;
 const templateDir = path.join(process.cwd(), "src", "templates");
 
+const streamToBuffer = async (stream) =>
+  new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
+
 // Send Email using AWS SES
 export const sendSES = async (to, subject, html) => {
   try {
@@ -45,7 +53,7 @@ export const sendSESWithMultipleS3Attachments = async (
   to,
   subject,
   html,
-  files // ["uploads/file1.jpg", "uploads/file2.png"]
+  files 
 ) => {
   try {
     let keys = files.map((url) =>
@@ -55,20 +63,19 @@ export const sendSESWithMultipleS3Attachments = async (
     const boundary = `NextPart_${Date.now()}`;
 
     let rawMessage = `From: ${process.env.APP_NAME} <${process.env.SMTP_FROM_ADDRESS}>
-To: ${to}
-Subject: ${subject}
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="${boundary}"
+    To: ${to}
+    Subject: ${subject}
+    MIME-Version: 1.0
+    Content-Type: multipart/mixed; boundary="${boundary}"
 
---${boundary}
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+    --${boundary}
+    Content-Type: text/html; charset="UTF-8"
+    Content-Transfer-Encoding: 7bit
 
-${html}
-`;
+    ${html}
+    `;
 
     for (const key of keys) {
-      // ❗ ensure no leading slash
       const cleanKey = key.startsWith("/") ? key.slice(1) : key;
 
       const s3Object = await s3.send(
@@ -84,13 +91,12 @@ ${html}
       const mimeType = mime.lookup(fileName) || "application/octet-stream";
 
       rawMessage += `
---${boundary}
-Content-Type: ${mimeType}; name="${fileName}"
-Content-Disposition: attachment; filename="${fileName}"
-Content-Transfer-Encoding: base64
-
-${base64File}
-`;
+        --${boundary}
+        Content-Type: ${mimeType}; name="${fileName}"
+        Content-Disposition: attachment; filename="${fileName}"
+        Content-Transfer-Encoding: base64
+        ${base64File}
+      `;
     }
 
     rawMessage += `\n--${boundary}--`;
@@ -129,13 +135,6 @@ export const sendRegistrationOtp = async (userData, otpData) => {
 
   return true;
 };
-const streamToBuffer = async (stream) =>
-  new Promise((resolve, reject) => {
-    const chunks = [];
-    stream.on("data", (chunk) => chunks.push(chunk));
-    stream.on("end", () => resolve(Buffer.concat(chunks)));
-    stream.on("error", reject);
-  });
 
 // ----- Contact Us Response -----
 export const sendContactSolution = (contact, solutionMessage, files) => {
@@ -201,7 +200,6 @@ export const sendForgotPasswordOtp = async (userData, otpData) => {
   return true;
 };
 
-// ----- Admin Create OTP -----
 export const sendEmailToAdmin = async (userData, password) => {
   try {
     const templatePath = path.join(templateDir, "adminEmail.pug");

@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 import AppError from "./appError.js";
 import HTTPStatusCode from "./httpStatusCode.js";
 export const globalErrorHandler = async (error, req, res, next) => {
-  
-
-    // ✅ Mongoose Validation Error
+    // Mongoose Validation Error
     if (error instanceof mongoose.Error.ValidationError) {
         return res.status(400).json({
             status: false,
@@ -18,7 +16,7 @@ export const globalErrorHandler = async (error, req, res, next) => {
         });
     }
 
-    // ✅ Mongoose CastError (e.g. invalid ObjectId)
+    // Mongoose CastError (e.g. invalid ObjectId)
     if (error instanceof mongoose.Error.CastError) {
         return res.status(400).json({
             status: false,
@@ -32,7 +30,7 @@ export const globalErrorHandler = async (error, req, res, next) => {
         });
     }
 
-    // ✅ MongoDB Duplicate Key Error
+    // MongoDB Duplicate Key Error
     if (error.code === 11000) {
         const field = Object.keys(error.keyValue)[0] || "unknown_field";
         return res.status(409).json({
@@ -47,7 +45,7 @@ export const globalErrorHandler = async (error, req, res, next) => {
         });
     }
 
-    // ✅ Custom AppError
+    // Custom AppError
     if (error instanceof AppError) {
         return res.status(error.HTTPStatusCode || 400).json({
           status: false,
