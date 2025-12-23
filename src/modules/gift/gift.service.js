@@ -122,7 +122,7 @@ export default class GiftService {
       isActive: true,
       category: { $in: orderedPackageIds },
     }).lean();
-    console.log(gifts);
+
     if (!gifts.length) {
       throw new AppError({
         status: false,
@@ -134,7 +134,9 @@ export default class GiftService {
     const orderedGifts = orderedPackageIds.flatMap((pkgId) =>
       gifts.filter((g) => String(g.category) === String(pkgId))
     );
-
-    return orderedGifts;
+    return {
+      total: orderedGifts.length,
+      data: orderedGifts,
+    };
   }
 }
