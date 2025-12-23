@@ -9,8 +9,10 @@ import {
   isAgeMatch,
   isFirstAppOpenToday,
   isHolidayPeriod,
+  isPackageActiveByDate,
   isWeekend,
 } from "../../utils/giftHelper.js";
+
 export default class GiftService {
   static async listGifts({ page = 1, limit = 10, search = "" }) {
     const skip = (page - 1) * limit;
@@ -59,18 +61,20 @@ export default class GiftService {
     const today = new Date();
     const weekend = isWeekend(today);
     const holiday = isHolidayPeriod(today);
-    const firstOpen = await isFirstAppOpenToday(reqUser._id);
 
-    const packages = await giftcategoryModel
-      .find({ isActive: true })
-      .sort({ priority: 1 })
-      .lean()
-      .filter((pkg) => isPackageActiveByDate(pkg, today));
+    const firstOpen = await isFirstAppOpenToday(reqUser._id);
+    console.log(firstOpen);
+    const packages = (
+      await giftcategoryModel
+        .find({ isActive: true })
+        .sort({ priority: 1 })
+        .lean()
+    ).filter((pkg) => isPackageActiveByDate(pkg, today));
 
     const orderedPackageIds = [];
 
     /* Exclusive First App Open */
-    if (firstOpen) {
+    if (!firstOpen) {
       const exclusivePkg = packages.find((p) => p.isExclusiveFirstAppOpen);
       if (exclusivePkg) orderedPackageIds.push(exclusivePkg._id);
     }
@@ -82,13 +86,17 @@ export default class GiftService {
         .forEach((p) => orderedPackageIds.push(p._id));
     }
 
-    /* Targeted Age Package */
-    for (const pkg of packages) {
-      if (pkg.isTargetedAgeOnly) {
-        const match = await isAgeMatch(reqUser._id, pkg);
-        if (match) orderedPackageIds.push(pkg._id);
-      }
-    }
+    const targetedAgePackages = packages.filter((p) => p.isTargetedAgeOnly);
+
+    const ageMatchResults = await Promise.all(
+      targetedAgePackages.map((pkg) =>
+        isAgeMatch(reqUser._id, pkg).then((match) => ({ match, pkg }))
+      )
+    );
+
+    ageMatchResults
+      .filter((r) => r.match)
+      .forEach((r) => orderedPackageIds.push(r.pkg._id));
 
     /* Weekend Only */
     if (weekend) {
@@ -112,9 +120,9 @@ export default class GiftService {
     /* Fetch Gifts */
     const gifts = await Gift.find({
       isActive: true,
-      package: { $in: orderedPackageIds },
+      category: { $in: orderedPackageIds },
     }).lean();
-    
+
     if (!gifts.length) {
       throw new AppError({
         status: false,
@@ -124,9 +132,11 @@ export default class GiftService {
     }
     /* Preserve order */
     const orderedGifts = orderedPackageIds.flatMap((pkgId) =>
-      gifts.filter((g) => String(g.package) === String(pkgId))
+      gifts.filter((g) => String(g.category) === String(pkgId))
     );
-
-    return orderedGifts;
+    return {
+      total: orderedGifts.length,
+      data: orderedGifts,
+    };
   }
 }
