@@ -66,7 +66,7 @@ export default class AdminChildrenService {
         };
     }
 
-    // ✅ Get child details by ID (with parent info)
+    // Get child details by ID (with parent info)
     static async getChildById(childId) {
         if (!mongoose.Types.ObjectId.isValid(childId)) {
             throw new AppError({

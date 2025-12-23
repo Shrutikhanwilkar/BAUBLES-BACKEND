@@ -131,11 +131,11 @@ export default class ReportService {
         throw new Error("Invalid dashboard type");
     }
 
-    // 🔹 PARALLEL EXECUTION
+    // PARALLEL EXECUTION
     const [[totalChildren, totalNice, totalNaughty], typeData] =
       await Promise.all([commonTotalsPromise, typeSpecificPromise]);
 
-    // 🔹 FORMAT RESPONSE
+    //FORMAT RESPONSE
     let data = {};
 
     if (type === "popular") {
@@ -161,7 +161,6 @@ export default class ReportService {
   }
 
   // ================= TOTALS =================
-
   static async totalChildCount() {
     const childCount = await Children.countDocuments();
     return childCount;
@@ -176,7 +175,6 @@ export default class ReportService {
   }
 
   // ================= POPULAR =================
-
   static async top20PopularBoysName() {
     let res = await Children.aggregate([
       {
@@ -232,7 +230,6 @@ export default class ReportService {
   }
 
   // ================= BEHAVIOUR =================
-
   static async top20NiceChildren(category) {
     return this.topByBehaviour(category);
   }
@@ -285,7 +282,6 @@ export default class ReportService {
   }
 
   // ================= STATE =================
-
   static async stateWiseNiceNaughty(niceCategoryId, naughtyCategoryId) {
     const niceId = niceCategoryId;
     const naughtyId = naughtyCategoryId;
